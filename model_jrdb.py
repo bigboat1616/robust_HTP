@@ -147,20 +147,29 @@ class TransMotion(nn.Module):
         self.obs_and_pred = 21
         self.device = device
         
-        self.fc_in_traj = nn.Linear(2,nhid)
-        self.fc_out_traj = nn.Linear(nhid, 2)
-        self.double_id_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device) 
-        self.id_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
+        # self.fc_in_traj = nn.Linear(2,nhid)
+        # self.fc_out_traj = nn.Linear(nhid, 2)
+        self.fc_in_real_traj = nn.Linear(2,nhid)
+        self.fc_in_imag_traj = nn.Linear(2,nhid)
+        self.double_id_real_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device) 
+        self.double_id_imag_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device)
+        self.id_real_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
+        self.id_imag_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
+        self.fc_out_real_traj = nn.Linear(nhid, 2)
+        self.fc_out_imag_traj = nn.Linear(nhid, 2)
 
         self.scale = torch.sqrt(torch.FloatTensor([nhid])).to(device)
 
         self.fc_in_3dbb = nn.Linear(4,nhid)
         self.bb3d_encoder = Learnedbb3dEncoding(nhid, dropout, device=device)
 
-        self.fc_in_2dbb = nn.Linear(4,nhid)
-        self.bb2d_encoder = Learnedbb2dEncoding(nhid, dropout, device=device)
+        # self.fc_in_2dbb = nn.Linear(4,nhid)
+        self.fc_in_real_2dbb = nn.Linear(4,nhid)
+        self.fc_in_imag_2dbb = nn.Linear(4,nhid)        
+        self.bb2d_real_encoder = Learnedbb2dEncoding(nhid, dropout, device=device)
+        self.bb2d_imag_encoder = Learnedbb2dEncoding(nhid, dropout, device=device)
 
-        self.fc_in_3dpose = nn.Linear(3, nhid)
+        # self.fc_in_3dpose = nn.Linear(3, nhid)
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
 
         self.fc_in_2dpose = nn.Linear(2, nhid)
@@ -183,9 +192,9 @@ class TransMotion(nn.Module):
         
 
     
-    def forward(self, tgt, padding_mask,metamask=None):
+    def forward(self, real_tgt, imag_tgt, padding_mask,metamask=None):
    
-        B, in_F, NJ, K = tgt.shape 
+        B, in_F, NJ, K = real_tgt.shape 
 
         F = self.obs_and_pred 
         J = self.token_num
@@ -196,61 +205,106 @@ class TransMotion(nn.Module):
         ## keep padding
         pad_idx = np.repeat([in_F - 1], out_F)
         i_idx = np.append(np.arange(0, in_F), pad_idx)  
-        tgt = tgt[:,i_idx]        
-        tgt = tgt.reshape(B,F,N,J,K)
+        # tgt = tgt[:,i_idx]        
+        # tgt = tgt.reshape(B,F,N,J,K)
+        real_tgt = real_tgt[:,i_idx]
+        imag_tgt = imag_tgt[:,i_idx]
+        real_tgt = real_tgt.reshape(B,F,N,J,K)
+        imag_tgt = imag_tgt.reshape(B,F,N,J,K)
     
         ## add mask
         mask_ratio_traj = 0.0 
         mask_ratio_modality = 0.0 
 
-        tgt_traj = tgt[:,:,:,0,:2].to(self.device) 
+        # tgt_traj = tgt[:,:,:,0,:2].to(self.device) 
+        # traj_mask = torch.rand((B,F,N)).float().to(self.device) > mask_ratio_traj
+        # traj_mask = traj_mask.unsqueeze(3).repeat_interleave(2,dim=-1)
+        # tgt_traj = tgt_traj*traj_mask
+        real_tgt_traj = real_tgt[:,:,:,0,:2].to(self.device)
+        imag_tgt_traj = imag_tgt[:,:,:,0,:2].to(self.device)
         traj_mask = torch.rand((B,F,N)).float().to(self.device) > mask_ratio_traj
         traj_mask = traj_mask.unsqueeze(3).repeat_interleave(2,dim=-1)
-        tgt_traj = tgt_traj*traj_mask
+        real_tgt_traj = real_tgt_traj*traj_mask
+        imag_tgt_traj = imag_tgt_traj*traj_mask        
 
-        tgt_2dbb = tgt[:,:,:,1,:4].to(self.device)
-
+        # tgt_2dbb = tgt[:,:,:,1,:4].to(self.device)
+        real_tgt_2dbb = real_tgt[:,:,:,1,:4].to(self.device)
+        imag_tgt_2dbb = imag_tgt[:,:,:,1,:4].to(self.device)
 
         ## mask for specific modality for whole observation horizon
         modality_selection_2dbb = (torch.rand((B,1,N)).float().to(self.device) > mask_ratio_modality).unsqueeze(3).repeat(1,F,1,4)
-        tgt_vis = tgt_2dbb*modality_selection_2dbb
-        tgt_2dbb = tgt_vis.to(self.device)
-
+        # tgt_vis = tgt_2dbb*modality_selection_2dbb
+        # tgt_2dbb = tgt_vis.to(self.device)
+        real_tgt_vis = real_tgt_2dbb*modality_selection_2dbb
+        imag_tgt_vis = imag_tgt_2dbb*modality_selection_2dbb
+        real_tgt_2dbb = real_tgt_vis.to(self.device)
+        imag_tgt_2dbb = imag_tgt_vis.to(self.device)
 
 
         ############
         # Transformer
         ###########
 
-        tgt_traj = self.fc_in_traj(tgt_traj) 
-        tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
+        # tgt_traj = self.fc_in_traj(tgt_traj) 
+        # tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
+        real_tgt_traj = self.fc_in_real_traj(real_tgt_traj)
+        imag_tgt_traj = self.fc_in_imag_traj(imag_tgt_traj)
+        real_tgt_traj = self.double_id_real_encoder(real_tgt_traj, num_people=N)
+        imag_tgt_traj = self.double_id_imag_encoder(imag_tgt_traj, num_people=N)
 
-        tgt_2dbb = self.fc_in_2dbb(tgt_2dbb[:,:9]) 
-        tgt_2dbb = self.bb2d_encoder(tgt_2dbb) 
+        # tgt_2dbb = self.fc_in_2dbb(tgt_2dbb[:,:9]) 
+        # tgt_2dbb = self.bb2d_encoder(tgt_2dbb) 
+        real_tgt_2dbb = self.fc_in_real_2dbb(real_tgt_2dbb[:,:9])
+        imag_tgt_2dbb = self.fc_in_imag_2dbb(imag_tgt_2dbb[:,:9])
+        real_tgt_2dbb = self.bb2d_real_encoder(real_tgt_2dbb)
+        imag_tgt_2dbb = self.bb2d_imag_encoder(imag_tgt_2dbb)
 
         tgt_padding_mask_global = padding_mask.repeat_interleave(F, dim=1) 
         tgt_padding_mask_local = padding_mask.reshape(-1).unsqueeze(1).repeat_interleave(self.seq_len,dim=1) 
   
-        tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
-        tgt_2dbb = torch.transpose(tgt_2dbb,0,1).reshape(in_F,-1,self.nhid) 
-        tgt = torch.cat((tgt_traj,tgt_2dbb),0) 
+        # tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
+        # tgt_2dbb = torch.transpose(tgt_2dbb,0,1).reshape(in_F,-1,self.nhid) 
+        # tgt = torch.cat((tgt_traj,tgt_2dbb),0) 
+        real_tgt_traj = torch.transpose(real_tgt_traj,0,1).reshape(F,-1,self.nhid)
+        imag_tgt_traj = torch.transpose(imag_tgt_traj,0,1).reshape(F,-1,self.nhid)
+        real_tgt_2dbb = torch.transpose(real_tgt_2dbb,0,1).reshape(in_F,-1,self.nhid)
+        imag_tgt_2dbb = torch.transpose(imag_tgt_2dbb,0,1).reshape(in_F,-1,self.nhid)
+        real_tgt = torch.cat((real_tgt_traj,real_tgt_2dbb),0)
+        imag_tgt = torch.cat((imag_tgt_traj,imag_tgt_2dbb),0)
 
-        out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
+        # out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
+        out_local_real = self.local_former(real_tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
+        out_local_imag = self.local_former(imag_tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
 
         ##### local residual ######
-        out_local = out_local * self.output_scale + tgt
+        # out_local = out_local * self.output_scale + tgt
+        out_local_real = out_local_real * self.output_scale + real_tgt
+        out_local_imag = out_local_imag * self.output_scale + imag_tgt
 
-        out_local = out_local[:21].reshape(21,B,N,self.nhid).permute(2,0,1,3).reshape(-1,B,self.nhid)
-        out_global = self.global_former(out_local, mask=None, src_key_padding_mask=tgt_padding_mask_global)
+        # out_local = out_local[:21].reshape(21,B,N,self.nhid).permute(2,0,1,3).reshape(-1,B,self.nhid)
+        # out_global = self.global_former(out_local, mask=None, src_key_padding_mask=tgt_padding_mask_global)
+        out_local_real = out_local_real[:21].reshape(21,B,N,self.nhid).permute(2,0,1,3).reshape(-1,B,self.nhid)
+        out_local_imag = out_local_imag[:21].reshape(21,B,N,self.nhid).permute(2,0,1,3).reshape(-1,B,self.nhid)
+        out_global_real = self.global_former(out_local_real, mask=None, src_key_padding_mask=tgt_padding_mask_global)
+        out_global_imag = self.global_former(out_local_imag, mask=None, src_key_padding_mask=tgt_padding_mask_global)
 
         ##### global residual ######
-        out_global = out_global * self.output_scale + out_local
-        out_primary = out_global.reshape(N,F,out_global.size(1),self.nhid)[0]
-        out_primary = self.fc_out_traj(out_primary) 
+        # out_global = out_global * self.output_scale + out_local
+        # out_primary = out_global.reshape(N,F,out_global.size(1),self.nhid)[0]
+        # out_primary = self.fc_out_traj(out_primary) 
+        out_global_real = out_global_real * self.output_scale + out_local_real
+        out_global_imag = out_global_imag * self.output_scale + out_local_imag
+        out_primary_real = out_global_real.reshape(N,F,out_global_real.size(1),self.nhid)[0]
+        out_primary_imag = out_global_imag.reshape(N,F,out_global_imag.size(1),self.nhid)[0]
+        out_primary_real = self.fc_out_real_traj(out_primary_real)
+        out_primary_imag = self.fc_out_imag_traj(out_primary_imag)
 
-        out = out_primary.transpose(0, 1).reshape(B, F, 1, 2)
 
-        return out
+        # out = out_primary.transpose(0, 1).reshape(B, F, 1, 2)
+        out_primary_real = out_primary_real.transpose(0, 1).reshape(B, F, 1, 2)
+        out_primary_imag = out_primary_imag.transpose(0, 1).reshape(B, F, 1, 2)
+
+        return out_primary_real, out_primary_imag
 
 def create_model(config, logger):
     seq_len = config["MODEL"]["seq_len"]
