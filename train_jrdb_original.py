@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, ConcatDataset
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset_jrdb import collate_batch, batch_process_coords, get_datasets, create_dataset
-from model_jrdb import create_model
+from model_jrdb_original import create_model
 from utils.utils import create_logger, load_default_config, load_config, AverageMeter
 from utils.metrics import MSE_LOSS
 
@@ -50,25 +50,13 @@ def evaluate_loss(model, dataloader, config):
 
 def compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=None, mode='val', loss_last=True, optimizer=None):
     
-    B, F, J, D = in_joints.shape
+    _, in_F, _, _ = in_joints.shape
 
     metamask = (mode == 'train')
-    # === 1. FFT適用（スケール調整） ===
-    in_joints_freq = torch.fft.fft(in_joints, dim=3)
-    
-    # === 2. 実数表現（2チャンネル化）===
-    in_joints_real = torch.view_as_real(in_joints_freq).to(torch.float32)
 
-    # === 3. モデルの予測（周波数空間で処理） ===
-    pred_joints_real = model(in_joints_real, padding_mask.to(dtype=torch.bool), metamask=metamask)
-
-    # === 4. 出力を複素数表現に戻す ===
-    pred_joints_freq = torch.view_as_complex(pred_joints_real) 
-
-    # === 5. IFFT適用（時間領域に戻す） ===
-    pred_joints = torch.fft.ifft(pred_joints_freq, dim=3).real
-    # === 6. MSE損失計算（正解ラベルは時間領域） ===
-    loss = MSE_LOSS(pred_joints[:,F:], out_joints, out_masks)
+    pred_joints = model(in_joints, padding_mask, metamask=metamask)
+ 
+    loss = MSE_LOSS(pred_joints[:,in_F:], out_joints, out_masks)
 
     return loss, pred_joints
 
@@ -245,6 +233,7 @@ def train(config, logger, experiment_name="", dataset_name=""):
         writer_valid.add_scalar("loss", val_loss, epoch)
 
         
+        
         val_ade = val_loss/100
         if val_ade < min_val_loss:
             
@@ -293,7 +282,6 @@ if __name__ == "__main__":
     logger.info(cfg)
 
     train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
-
 
 
 

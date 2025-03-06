@@ -15,9 +15,10 @@ class AuxilliaryEncoderCMT(nn.TransformerEncoder):
     def forward(self, src, mask=None, src_key_padding_mask=None, get_attn=False):
         output = src
         attn_matrices = []
-        
+
         for i, mod in enumerate(self.layers):
             output = mod(output, src_mask=mask, src_key_padding_mask=src_key_padding_mask)
+
         if self.norm is not None:
             output = self.norm(output)
 
@@ -146,23 +147,23 @@ class TransMotion(nn.Module):
         self.obs_and_pred = 21
         self.device = device
         
-        self.fc_in_traj = nn.Linear(4,nhid)
-        self.fc_out_traj = nn.Linear(nhid, 4)
+        self.fc_in_traj = nn.Linear(2,nhid)
+        self.fc_out_traj = nn.Linear(nhid, 2)
         self.double_id_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device) 
         self.id_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
 
         self.scale = torch.sqrt(torch.FloatTensor([nhid])).to(device)
 
-        self.fc_in_3dbb = nn.Linear(8,nhid)
+        self.fc_in_3dbb = nn.Linear(4,nhid)
         self.bb3d_encoder = Learnedbb3dEncoding(nhid, dropout, device=device)
 
-        self.fc_in_2dbb = nn.Linear(8,nhid)
+        self.fc_in_2dbb = nn.Linear(4,nhid)
         self.bb2d_encoder = Learnedbb2dEncoding(nhid, dropout, device=device)
 
-        self.fc_in_3dpose = nn.Linear(6, nhid)
+        self.fc_in_3dpose = nn.Linear(3, nhid)
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
 
-        self.fc_in_2dpose = nn.Linear(4, nhid)
+        self.fc_in_2dpose = nn.Linear(2, nhid)
         self.pose2d_encoder = Learnedpose2dEncoding(nhid, dropout, device=device)
 
 
@@ -184,7 +185,7 @@ class TransMotion(nn.Module):
     
     def forward(self, tgt, padding_mask,metamask=None):
    
-        B, in_F, NJ, K, _ = tgt.shape 
+        B, in_F, NJ, K = tgt.shape 
 
         F = self.obs_and_pred 
         J = self.token_num
@@ -196,31 +197,31 @@ class TransMotion(nn.Module):
         pad_idx = np.repeat([in_F - 1], out_F)
         i_idx = np.append(np.arange(0, in_F), pad_idx)  
         tgt = tgt[:,i_idx]        
-        tgt = tgt.reshape(B,F,N,J,-1)
+        tgt = tgt.reshape(B,F,N,J,K)
     
         ## add mask
         mask_ratio_traj = 0.0 
         mask_ratio_modality = 0.0 
 
-        tgt_traj = tgt[:,:,:,0,:4].to(self.device) 
+        tgt_traj = tgt[:,:,:,0,:2].to(self.device) 
         traj_mask = torch.rand((B,F,N)).float().to(self.device) > mask_ratio_traj
-        traj_mask = traj_mask.unsqueeze(3).repeat_interleave(4,dim=-1)
+        traj_mask = traj_mask.unsqueeze(3).repeat_interleave(2,dim=-1)
         tgt_traj = tgt_traj*traj_mask
 
-        tgt_2dbb = tgt[:,:,:,1,:8].to(self.device)
+        tgt_2dbb = tgt[:,:,:,1,:4].to(self.device)
 
 
         ## mask for specific modality for whole observation horizon
-        modality_selection_2dbb = (torch.rand((B,1,N)).float().to(self.device) > mask_ratio_modality).unsqueeze(3).repeat(1,F,1,8)
+        modality_selection_2dbb = (torch.rand((B,1,N)).float().to(self.device) > mask_ratio_modality).unsqueeze(3).repeat(1,F,1,4)
         tgt_vis = tgt_2dbb*modality_selection_2dbb
         tgt_2dbb = tgt_vis.to(self.device)
 
 
         ############
         # Transformer
-        ############
-        tgt_traj = self.fc_in_traj(tgt_traj) 
+        ###########
 
+        tgt_traj = self.fc_in_traj(tgt_traj) 
         tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
 
         tgt_2dbb = self.fc_in_2dbb(tgt_2dbb[:,:9]) 
@@ -233,7 +234,7 @@ class TransMotion(nn.Module):
         tgt_2dbb = torch.transpose(tgt_2dbb,0,1).reshape(in_F,-1,self.nhid) 
         tgt = torch.cat((tgt_traj,tgt_2dbb),0) 
 
-        out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local.to(torch.float32))
+        out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
 
         ##### local residual ######
         out_local = out_local * self.output_scale + tgt
@@ -246,9 +247,8 @@ class TransMotion(nn.Module):
         out_primary = out_global.reshape(N,F,out_global.size(1),self.nhid)[0]
         out_primary = self.fc_out_traj(out_primary) 
 
-        out = out_primary.transpose(0, 1).reshape(B, F, 1, 4)
-        out_freq = out.reshape(B, F, 1, 2, 2)
-        return out_freq
+        out = out_primary.transpose(0, 1).reshape(B, F, 1, 2)
+        return out
 
 def create_model(config, logger):
     seq_len = config["MODEL"]["seq_len"]

@@ -6,28 +6,14 @@ from progress.bar import Bar
 from torch.utils.data import DataLoader
 
 from dataset_jrdb import batch_process_coords, create_dataset, collate_batch
-from model_jrdb import create_model
+from model_jrdb_original import create_model
 from utils.utils import create_logger
 
 def inference(model, config, input_joints, padding_mask, out_len=14):
     model.eval()
     
     with torch.no_grad():
-        # === 1. FFT適用（スケール調整） ===
-        in_joints_freq = torch.fft.fft(input_joints, dim=3)
-
-        # === 2. 実数表現（2チャンネル化）===
-        in_joints_real = torch.view_as_real(in_joints_freq).to(torch.float32)
-
-        # === 3. モデルの予測（周波数空間で処理） ===
-        pred_joints_real = model(in_joints_real, padding_mask.to(dtype=torch.bool))
-
-        # === 4. 出力を複素数表現に戻す ===
-        pred_joints_freq = torch.view_as_complex(pred_joints_real)
-
-        # === 5. IFFT適用（時間領域に戻す） ===
-        pred_joints = torch.fft.ifft(pred_joints_freq, dim=3).real
-
+        pred_joints = model(input_joints, padding_mask)
 
     output_joints = pred_joints[:,-out_len:]
 
