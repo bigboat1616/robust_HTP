@@ -5,6 +5,7 @@ import os
 import random
 import time
 import torch
+import wandb
 
 from progress.bar import Bar
 from torch.utils.data import DataLoader, ConcatDataset
@@ -99,7 +100,53 @@ def dataloader_for_val(dataset, config, **kwargs):
                       collate_fn=collate_batch,
                       **kwargs)
 
+def analyze_spectral_bias(pred_traj, gt_traj, step, prefix="train"):
+    """予測軌跡と教師軌跡の周波数成分を分析"""
+    # [B, F, 1, 2] -> [B, F, 2]に整形
+    pred_traj = pred_traj.squeeze(2)
+    gt_traj = gt_traj.squeeze(2)
+    
+    # FFTを計算（時系列方向）
+    pred_freq = torch.fft.fft(pred_traj, dim=1)  # [B, F, 2]
+    gt_freq = torch.fft.fft(gt_traj, dim=1)      # [B, F, 2]
+    
+    # 振幅スペクトルを計算
+    pred_amp = torch.abs(pred_freq).mean(dim=(0,2))  # [F]
+    gt_amp = torch.abs(gt_freq).mean(dim=(0,2))      # [F]
+    
+    # 周波数成分ごとの誤差を計算
+    freq_errors = torch.abs(pred_amp - gt_amp)
+    
+    # wandbにログを記録
+    log_dict = {}
+    
+    # 各周波数成分の振幅と誤差
+    for i in range(len(freq_errors)):
+        log_dict.update({
+            f"{prefix}/freq_{i}_error": freq_errors[i].item(),
+            f"{prefix}/pred_amp_{i}": pred_amp[i].item(),
+            f"{prefix}/gt_amp_{i}": gt_amp[i].item(),
+        })
+    
+    # 低周波・高周波の平均誤差
+    n_freqs = len(freq_errors)
+    low_freq_error = freq_errors[1:n_freqs//2].mean()  # DC成分を除く低周波
+    high_freq_error = freq_errors[n_freqs//2:].mean()  # 高周波
+    log_dict.update({
+        f"{prefix}/low_freq_error": low_freq_error.item(),
+        f"{prefix}/high_freq_error": high_freq_error.item(),
+    })
+    
+    wandb.log(log_dict, step=step)
+
 def train(config, logger, experiment_name="", dataset_name=""):
+    # wandbの初期化
+    wandb.init(
+        project="trajectory_prediction_spectral_bias",
+        entity="taishu-arashima-anzu",  # ユーザー名を設定
+        name=experiment_name,
+        config=config
+    )
 
     ################################
     # Load data
@@ -107,11 +154,11 @@ def train(config, logger, experiment_name="", dataset_name=""):
 
     in_F, out_F = config['TRAIN']['input_track_size'], config['TRAIN']['output_track_size']
     dataset_train = ConcatDataset(get_datasets(config['DATA']['train_datasets'], config, logger))
-    dataloader_train = dataloader_for(dataset_train, config, shuffle=True, pin_memory=True)
+    dataloader_train = dataloader_for(dataset_train, config, shuffle=False, pin_memory=True)
     logger.info(f"Training on a total of {len(dataset_train)} annotations.")
 
     dataset_val = create_dataset(config['DATA']['train_datasets'][0], logger, split="val", track_size=(in_F+out_F), track_cutoff=in_F)
-    dataloader_val = dataloader_for(dataset_val, config, shuffle=True, pin_memory=True)
+    dataloader_val = dataloader_for(dataset_val, config, shuffle=False, pin_memory=True)
 
 
     writer_name = experiment_name + "_" + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
@@ -219,6 +266,20 @@ def train(config, logger, experiment_name="", dataset_name=""):
             if cfg['dry_run']:
                 break
             
+            # 訓練時の周波数分析を追加
+            analyze_spectral_bias(
+                pred_joints[:, in_F:],  # 予測部分
+                out_joints,             # GT
+                epoch * train_steps + i,
+                prefix="train"
+            )
+            
+            # wandbに訓練の損失を記録
+            wandb.log({
+                "train/loss": loss.item(),
+                "train/learning_rate": optimizer.param_groups[0]['lr']
+            }, step=epoch * train_steps + i)
+
         bar.finish()
 
         ################################
@@ -229,8 +290,32 @@ def train(config, logger, experiment_name="", dataset_name=""):
 
         writer_train.add_scalar("loss", loss_avg.avg, epoch)
      
-        val_loss = evaluate_loss(model, dataloader_val, config)
-        writer_valid.add_scalar("loss", val_loss, epoch)
+        ################################
+        # 検証時の分析
+        ################################
+        model.eval()
+        with torch.no_grad():
+            val_loss = evaluate_loss(model, dataloader_val, config)
+            
+            # 検証データの最初のバッチで周波数分析
+            val_batch = next(iter(dataloader_val))
+            joints, masks, padding_mask = val_batch
+            in_joints, in_masks, out_joints, out_masks, padding_mask = batch_process_coords(
+                joints, masks, padding_mask, config
+            )
+            pred_joints = model(in_joints, padding_mask)
+            
+            analyze_spectral_bias(
+                pred_joints[:, in_F:],
+                out_joints,
+                epoch,
+                prefix="val"
+            )
+            
+            wandb.log({
+                "val/loss": val_loss,
+                "val/ade": val_loss/100
+            }, step=epoch)
 
         
         
@@ -280,6 +365,12 @@ if __name__ == "__main__":
     logger = create_logger(cfg["OUTPUT"]["log_dir"])
     logger.info("Initializing with config:")
     logger.info(cfg)
+
+    # wandbの設定をconfigに追加
+    cfg['wandb'] = {
+        'project': 'trajectory_prediction_spectral_bias',
+        'entity': 'taishu-arashima-anzu',  # wandbのユーザー名
+    }
 
     train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
 

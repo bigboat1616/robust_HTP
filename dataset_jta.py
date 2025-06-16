@@ -1,7 +1,7 @@
 import torch
 from torch.nn.utils.rnn import pad_sequence
 
-from utils.data import load_data_jta_all_visual_cues
+from utils.data import load_data_jta_all_visual_cues, load_data_jta_3dp
 
 def collate_batch(batch):
     joints_list = []
@@ -131,11 +131,28 @@ class JtaAllVisualCuesDataset(MultiPersonTrajPoseDataset):
             self.datalist.append(people)
 
 
+class Jta3dpDataset(MultiPersonTrajPoseDataset):
+    def __init__(self, **args):
+        super(Jta3dpDataset, self).__init__("jta_3dp", frequency=1, **args)
+
+    def load_data(self):
+        self.data = load_data_jta_3dp(split=self.split)
+        self.datalist = []
+        for scene in self.data:
+            joints, mask = scene
+            people=[]   
+            for n in range(len(joints)):
+                people.append((torch.from_numpy(joints[n]),torch.from_numpy(mask[n])))
+            
+            self.datalist.append(people)
+
 def create_dataset(dataset_name, logger, **args):
     logger.info("Loading dataset " + dataset_name)
 
     if dataset_name == 'jta_all_visual_cues':
         dataset = JtaAllVisualCuesDataset(**args)
+    elif dataset_name == 'jta_3dp':
+        dataset = Jta3dpDataset(**args)
     else:
         raise ValueError(f"Dataset with name '{dataset_name}' not found.")
         

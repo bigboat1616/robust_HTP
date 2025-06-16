@@ -48,13 +48,34 @@ def evaluate_loss(model, dataloader, config):
 
     return loss_avg.avg
 
-def compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=None, mode='val', loss_last=True, optimizer=None):
-    
+def compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=0, mode='val', loss_last=True, optimizer=None):
     B, F, J, D = in_joints.shape
-
     metamask = (mode == 'train')
     # === 1. FFT適用（スケール調整） ===
     in_joints_freq = torch.fft.fft(in_joints, dim=3)
+
+    # 追加：低周波数成分のみを抽出
+    cutoff = config['TRAIN']['cutoff']
+    if epoch < 10:
+        in_joints_freq[..., 1:] = 0
+    elif epoch < 30:
+        in_joints_freq[..., cutoff:] = 0
+    elif epoch < 60:
+        in_joints_freq[..., 3:] = 0
+
+    
+    # ターゲット側にも同様の処理（もしターゲットにもフィルタリングを行いたいなら）
+    if epoch < 10:
+        out_joints_freq = torch.fft.fft(out_joints, dim=3)
+        out_joints_freq[..., 1:] = 0
+    elif epoch <30:
+        out_joints_freq = torch.fft.fft(out_joints, dim=3)
+        out_joints_freq[..., cutoff:] = 0
+    elif epoch < 60:
+        out_joints_freq = torch.fft.fft(out_joints, dim=3)
+        out_joints_freq[..., 3:] = 0
+    else:
+        out_joints_freq = out_joints
     
     # === 2. 実数表現（2チャンネル化）===
     in_joints_real = torch.view_as_real(in_joints_freq).to(torch.float32)
@@ -65,11 +86,14 @@ def compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padd
     # === 4. 出力を複素数表現に戻す ===
     pred_joints_freq = torch.view_as_complex(pred_joints_real) 
 
+    # ターゲットを時間領域に戻す
+    if epoch < 60:
+        out_joints_freq = torch.fft.ifft(out_joints_freq, dim=3).real
+
     # === 5. IFFT適用（時間領域に戻す） ===
     pred_joints = torch.fft.ifft(pred_joints_freq, dim=3).real
     # === 6. MSE損失計算（正解ラベルは時間領域） ===
-    loss = MSE_LOSS(pred_joints[:,F:], out_joints, out_masks)
-
+    loss = MSE_LOSS(pred_joints[:,F:], out_joints_freq, out_masks)
     return loss, pred_joints
 
 def adjust_learning_rate(optimizer, epoch, config):
@@ -185,7 +209,7 @@ def train(config, logger, experiment_name="", dataset_name=""):
                 dataiter = iter(dataloader_train)
                 joints, masks, padding_mask = next(dataiter)
 
-            in_joints, in_masks, out_joints, out_masks, padding_mask = batch_process_coords(joints, masks, padding_mask, config, training=True)
+            in_joints, in_masks, out_joints, out_masks, padding_mask = batch_process_coords(joints, masks, padding_mask, config, training=True, modality_selection='traj')
             padding_mask = padding_mask.to(config["DEVICE"])
             
             timer["DATA"] = time.time() - start

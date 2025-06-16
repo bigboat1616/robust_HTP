@@ -233,7 +233,6 @@ class TransMotion(nn.Module):
         tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
         tgt_2dbb = torch.transpose(tgt_2dbb,0,1).reshape(in_F,-1,self.nhid) 
         tgt = torch.cat((tgt_traj,tgt_2dbb),0) 
-
         out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
 
         ##### local residual ######

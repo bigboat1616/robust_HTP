@@ -10,5 +10,4 @@ def MSE_LOSS(output, target, mask=None):
 
     mean_K = torch.mean(norm, dim=-1)
     mean_B = torch.mean(mean_K)
-
     return mean_B*100

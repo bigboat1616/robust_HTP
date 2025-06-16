@@ -12,6 +12,8 @@ TRAIN:
     val_frequency: 5
     optimizer: "adam"
     max_grad_norm: 1.0
+    cutoff : 2
+    modality: 'traj+2dbox'
 DATA:
     train_datasets:
         - jrdb_2dbox
