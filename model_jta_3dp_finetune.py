@@ -5,6 +5,7 @@ import math
 import numpy as np
 import argparse
 from datetime import datetime
+from stgcn import ST_GCN_18
 
 class AuxilliaryEncoderCMT(nn.TransformerEncoder):
     def __init__(self, encoder_layer_local, num_layers, norm=None):
@@ -41,20 +42,6 @@ class AuxilliaryEncoderST(nn.TransformerEncoder):
             output = self.norm(output)
 
         return output
-
-class LearnedIDEncoding(nn.Module):
-    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000, seq_len=21, device='cuda:0'):
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        self.device = device
-        self.person_encoding = nn.Embedding(1000, d_model, max_norm=True).to(device)
-
-    def forward(self, x: torch.Tensor, num_people=1) -> torch.Tensor:
-
-        seq_len = 21
-   
-        x = x + self.person_encoding(torch.arange(num_people).repeat_interleave(seq_len, dim=0).to(self.device)).unsqueeze(1)
-        return self.dropout(x)
 
 class LearnedTrajandIDEncoding(nn.Module):
     def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000, seq_len=21, device='cuda:0'):
@@ -98,11 +85,15 @@ class TransMotion3DP(nn.Module):
         self.fc_in_traj = nn.Linear(2, nhid)
         self.fc_out_traj = nn.Linear(nhid, 2)
         self.double_id_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device)
-        self.id_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
-
+        
         # 3D姿勢用のレイヤー
-        self.fc_in_3dpose = nn.Linear(3, nhid)
+        self.fc_in_3dpose = nn.Linear(3, 64)
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
+
+
+        # ST-GCNレイヤー
+        graph_cfg = {'layout': 'jta_3dp_row', 'strategy': 'distance', 'max_hop': 1, 'dilation': 1}
+        self.stgcn = ST_GCN_18(in_channels=64, feature_dim=nhid, graph_cfg=graph_cfg, edge_importance_weighting=True, data_bn=True)
 
         # Transformerレイヤー
         encoder_layer_local = nn.TransformerEncoderLayer(d_model=nhid,
@@ -152,8 +143,26 @@ class TransMotion3DP(nn.Module):
         tgt_traj = self.fc_in_traj(tgt_traj) 
         tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
 
-        tgt_3dpose = tgt_3dpose[:,:9].transpose(2,3).reshape(B,-1,N,3) 
-        tgt_3dpose = self.fc_in_3dpose(tgt_3dpose) # (B, 9, N, 22,64)
+        tgt_3dpose_9frames = tgt_3dpose[:,:9]  # (B, 9, N, 22, 3)
+        tgt_3dpose = self.fc_in_3dpose(tgt_3dpose_9frames) # (B, 9, N, 22,64)
+        # ST-GCNでpose3d_encoderを置き換え: (B, 9, N, 22, nhid) -> (B, 198, N, nhid)
+        # ST-GCNは(N, C, T, V)形式を期待: (B*N, 3, 9, 22)
+        # データの整合性を保つため、明示的にreshapeとpermuteを行う
+        BN = B * N
+        # (B, 9, N, 22, 3) -> (B, N, 9, 22, 3) にpermuteしてからreshape
+        # これにより、同じbatch内の同じpersonのデータが連続して並ぶ
+        tgt_3dpose_stgcn_input = tgt_3dpose.permute(0, 2, 1, 3, 4).contiguous()  # (B, N, 9, 22, 64)
+        tgt_3dpose_stgcn_input = tgt_3dpose_stgcn_input.view(BN, 9, 22, 64)  # (B*N, 9, 22, 64)
+        # ST-GCNは(N, C, T, V)形式を期待: (B*N, 3, 9, 22)
+        tgt_3dpose_stgcn_input = tgt_3dpose_stgcn_input.permute(0, 3, 1, 2).contiguous()  # (B*N, 3, 9, 22)
+        # ST-GCNを通す
+        tgt_3dpose_stgcn_output = self.stgcn(tgt_3dpose_stgcn_input)  # (B*N, nhid, 9, 22)
+        # 既存のフローに合わせてreshape: (B, 198, N, nhid)
+        tgt_3dpose_stgcn_output = tgt_3dpose_stgcn_output.permute(0, 2, 3, 1).contiguous()  # (B*N, 9, 22, nhid)
+        tgt_3dpose_stgcn_output = tgt_3dpose_stgcn_output.view(B, N, 9, 22, self.nhid)  # (B, N, 9, 22, nhid)
+        tgt_3dpose_stgcn_output = tgt_3dpose_stgcn_output.permute(0, 2, 3, 1, 4).contiguous()  # (B, 9, 22, N, nhid)
+        tgt_3dpose = tgt_3dpose_stgcn_output.view(B, 9*22, N, self.nhid)  # (B, 198, N, nhid)
+
         tgt_3dpose = self.pose3d_encoder(tgt_3dpose)
 
 
@@ -205,4 +214,72 @@ def create_model(config, logger):
         device=config["DEVICE"]
     ).to(config["DEVICE"]).float()
 
+    # 事前学習バックボーンを読み込んで凍結
+    ckpt_path = config["MODEL"].get("backbone_ckpt")
+    if ckpt_path:
+        load_and_freeze_backbone_for_transmotion(model, ckpt_path, device=config["DEVICE"])
+
+
     return model 
+
+def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: str, device='cpu'):
+    """
+    ckpt の 'encoder_state_dict'（または 'state_dict'）にある
+      - 'encoder.*'           → model.stgcn.*
+      - 'coord_to_feature.*'  → model.fc_in_3dpose.*
+    を読み込んで、両モジュールを凍結（勾配停止＋BNをeval固定）する。
+    """
+    ckpt = torch.load(ckpt_path, map_location=device)
+    sd = ckpt.get('encoder_state_dict', ckpt.get('state_dict', ckpt))
+
+    # DataParallel対策: 'module.' を剥がす
+    def strip_module(k): 
+        return k[7:] if k.startswith('module.') else k
+
+    remapped = {}
+    for k, v in sd.items():
+        k = strip_module(k)
+        if k.startswith('encoder.'):
+            new_k = 'stgcn.' + k[len('encoder.'):]
+            remapped[new_k] = v
+        elif k.startswith('coord_to_feature.'):
+            new_k = 'fc_in_3dpose.' + k[len('coord_to_feature.'):]
+            remapped[new_k] = v
+        # それ以外は無視（このモデルに無いので）
+
+    # 既存 state_dict に上書き（形状が一致するキーのみ）
+    cur = model.state_dict()
+    matched = {k: v for k, v in remapped.items() if k in cur and cur[k].shape == v.shape}
+    cur.update(matched)
+    missing, unexpected = model.load_state_dict(cur, strict=False)
+
+    print(f"[backbone] loaded {len(matched)} tensors "
+          f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
+          f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
+
+    # ---- 凍結（勾配停止）----
+    for p in model.fc_in_3dpose.parameters():
+        p.requires_grad = False
+    for p in model.stgcn.parameters():
+        p.requires_grad = False
+
+    # ---- ST-GCN内のBatchNormを推論固定（統計更新停止＆affineも凍結）----
+    for m in model.stgcn.modules():
+        if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
+            m.eval()
+            m.track_running_stats = True
+            if m.affine:
+                m.weight.requires_grad = False
+                m.bias.requires_grad = False
+
+    # model.train() を呼んでも stgcn の BN が学習モードに戻らないように軽いラッパ（任意だが推奨）
+    orig_train = model.train
+    def _train_wrapper(mode: bool = True):
+        out = orig_train(mode)
+        model.stgcn.eval()
+        return out
+    model.train = _train_wrapper
+
+    print("[backbone] fc_in_3dpose & stgcn are FROZEN (incl. BN eval).")
+
+    

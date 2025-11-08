@@ -9,3 +9,4 @@ tensorboard
 scipy
 pykalman
 six
+wandb

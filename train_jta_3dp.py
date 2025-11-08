@@ -5,13 +5,14 @@ import os
 import random
 import time
 import torch
+import wandb
 
 from progress.bar import Bar
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset_jta import collate_batch, batch_process_coords, get_datasets, create_dataset
-from model_jta_3dp import create_model
+from model_jta_3dp_finetune import create_model
 from utils.utils import create_logger, load_default_config, load_config, AverageMeter
 from utils.metrics import MSE_LOSS
 
@@ -72,8 +73,8 @@ def adjust_learning_rate(optimizer, epoch, config):
         lr = lr * (0.1 ** (epoch // (config['TRAIN']['epochs']*4./5.)  ))
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
-    print('lr: ',lr)
-        
+    return lr
+
 def save_checkpoint(model, optimizer, epoch, config, filename, logger):
     logger.info(f'Saving checkpoint to {filename}.')
     ckpt = {
@@ -100,6 +101,20 @@ def dataloader_for_val(dataset, config, **kwargs):
                       **kwargs)
 
 def train(config, logger, experiment_name="", dataset_name=""):
+
+    ################################
+    # Initialize wandb
+    ################################
+    if experiment_name == "":
+        experiment_name = f"jta_3dp_training_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    wandb.init(
+        project=config.get('wandb_project', 'social-transmotion'),
+        entity=config.get('wandb_entity'),
+        name=experiment_name,
+        config=config,
+        tags=["jta_3dp", "training"]
+    )
 
     ################################
     # Load data
@@ -151,7 +166,8 @@ def train(config, logger, experiment_name="", dataset_name=""):
         disc_acc_avg = AverageMeter()
 
         if config["TRAIN"]["optimizer"] == "adam":
-            adjust_learning_rate(optimizer, epoch, config)
+            lr = adjust_learning_rate(optimizer, epoch, config)
+            logger.info(f'Epoch {epoch}: Learning rate adjusted to {lr:.6f}')
 
         train_steps =  len(dataloader_train)
 
@@ -232,6 +248,16 @@ def train(config, logger, experiment_name="", dataset_name=""):
         val_loss = evaluate_loss(model, dataloader_val, config)
         writer_valid.add_scalar("loss", val_loss, epoch)
 
+        # Log to wandb
+        wandb.log({
+            "train_loss": loss_avg.avg,
+            "val_loss": val_loss,
+            "epoch": epoch,
+            "learning_rate": optimizer.param_groups[0]['lr'],
+            "best_val_ade": min_val_loss,
+            "epoch_time": time.time() - start_time
+        })
+
         
         
         val_ade = val_loss/100
@@ -240,6 +266,7 @@ def train(config, logger, experiment_name="", dataset_name=""):
             min_val_loss = val_ade
             print('------------------------------BEST MODEL UPDATED------------------------------')
             print('Best ADE: ', val_ade)
+            logger.info(f'Best ADE: {val_ade:.6f}')
             save_checkpoint(model, optimizer, epoch, config, 'best_val'+'_checkpoint.pth.tar', logger)
 
 
@@ -247,9 +274,15 @@ def train(config, logger, experiment_name="", dataset_name=""):
             break
         print('time for training: ', time.time()-start_time)
         print('epoch ', epoch, ' finished!')
+        epoch_time = time.time() - start_time
+        logger.info(f'Epoch {epoch} finished! Training time: {epoch_time:.2f} seconds')
 
     if not cfg['dry_run']:
         save_checkpoint(model, optimizer, epoch, config, 'checkpoint.pth.tar', logger)
+    
+    # Finish wandb run
+    wandb.finish()
+    
     logger.info("All done.")
 
 if __name__ == "__main__":
@@ -257,6 +290,8 @@ if __name__ == "__main__":
     parser.add_argument("--exp_name", type=str, default="", help="Experiment name. Otherwise will use timestamp")
     parser.add_argument("--cfg", type=str, default="", help="Config name. Otherwise will use default config")
     parser.add_argument('--dry-run', action='store_true', help="Run just one iteration")
+    parser.add_argument("--wandb_project", type=str, default="social-transmotion", help="Wandb project name")
+    parser.add_argument("--wandb_entity", type=str, default=None, help="Wandb entity/username")
     args = parser.parse_args()
 
     if args.cfg != "":
@@ -265,6 +300,8 @@ if __name__ == "__main__":
         cfg = load_default_config()
 
     cfg['dry_run'] = args.dry_run
+    cfg['wandb_project'] = args.wandb_project
+    cfg['wandb_entity'] = args.wandb_entity
 
     random.seed(cfg['SEED'])
     torch.manual_seed(cfg['SEED'])

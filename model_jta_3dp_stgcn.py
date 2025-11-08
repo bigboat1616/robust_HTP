@@ -5,6 +5,7 @@ import math
 import numpy as np
 import argparse
 from datetime import datetime
+from stgcn import ST_GCN_18
 
 class AuxilliaryEncoderCMT(nn.TransformerEncoder):
     def __init__(self, encoder_layer_local, num_layers, norm=None):
@@ -41,20 +42,6 @@ class AuxilliaryEncoderST(nn.TransformerEncoder):
             output = self.norm(output)
 
         return output
-
-class LearnedIDEncoding(nn.Module):
-    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000, seq_len=21, device='cuda:0'):
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        self.device = device
-        self.person_encoding = nn.Embedding(1000, d_model, max_norm=True).to(device)
-
-    def forward(self, x: torch.Tensor, num_people=1) -> torch.Tensor:
-
-        seq_len = 21
-   
-        x = x + self.person_encoding(torch.arange(num_people).repeat_interleave(seq_len, dim=0).to(self.device)).unsqueeze(1)
-        return self.dropout(x)
 
 class LearnedTrajandIDEncoding(nn.Module):
     def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000, seq_len=21, device='cuda:0'):
@@ -98,11 +85,15 @@ class TransMotion3DP(nn.Module):
         self.fc_in_traj = nn.Linear(2, nhid)
         self.fc_out_traj = nn.Linear(nhid, 2)
         self.double_id_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device)
-        self.id_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
-
+        
         # 3D姿勢用のレイヤー
-        self.fc_in_3dpose = nn.Linear(3, nhid)
+        self.fc_in_3dpose = nn.Linear(3, 64)
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
+
+
+        # ST-GCNレイヤー
+        graph_cfg = {'layout': 'jta_3dp_row', 'strategy': 'distance', 'max_hop': 1, 'dilation': 1}
+        self.stgcn = ST_GCN_18(in_channels=64, feature_dim=nhid, graph_cfg=graph_cfg, edge_importance_weighting=True, data_bn=True)
 
         # Transformerレイヤー
         encoder_layer_local = nn.TransformerEncoderLayer(d_model=nhid,
@@ -152,8 +143,26 @@ class TransMotion3DP(nn.Module):
         tgt_traj = self.fc_in_traj(tgt_traj) 
         tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
 
-        tgt_3dpose = tgt_3dpose[:,:9].transpose(2,3).reshape(B,-1,N,3) 
-        tgt_3dpose = self.fc_in_3dpose(tgt_3dpose) # (B, 9, N, 22,64)
+        tgt_3dpose_9frames = tgt_3dpose[:,:9]  # (B, 9, N, 22, 3)
+        tgt_3dpose = self.fc_in_3dpose(tgt_3dpose_9frames) # (B, 9, N, 22,64)
+        # ST-GCNでpose3d_encoderを置き換え: (B, 9, N, 22, nhid) -> (B, 198, N, nhid)
+        # ST-GCNは(N, C, T, V)形式を期待: (B*N, 3, 9, 22)
+        # データの整合性を保つため、明示的にreshapeとpermuteを行う
+        BN = B * N
+        # (B, 9, N, 22, 3) -> (B, N, 9, 22, 3) にpermuteしてからreshape
+        # これにより、同じbatch内の同じpersonのデータが連続して並ぶ
+        tgt_3dpose_stgcn_input = tgt_3dpose.permute(0, 2, 1, 3, 4).contiguous()  # (B, N, 9, 22, 64)
+        tgt_3dpose_stgcn_input = tgt_3dpose_stgcn_input.view(BN, 9, 22, 64)  # (B*N, 9, 22, 64)
+        # ST-GCNは(N, C, T, V)形式を期待: (B*N, 3, 9, 22)
+        tgt_3dpose_stgcn_input = tgt_3dpose_stgcn_input.permute(0, 3, 1, 2).contiguous()  # (B*N, 3, 9, 22)
+        # ST-GCNを通す
+        tgt_3dpose_stgcn_output = self.stgcn(tgt_3dpose_stgcn_input)  # (B*N, nhid, 9, 22)
+        # 既存のフローに合わせてreshape: (B, 198, N, nhid)
+        tgt_3dpose_stgcn_output = tgt_3dpose_stgcn_output.permute(0, 2, 3, 1).contiguous()  # (B*N, 9, 22, nhid)
+        tgt_3dpose_stgcn_output = tgt_3dpose_stgcn_output.view(B, N, 9, 22, self.nhid)  # (B, N, 9, 22, nhid)
+        tgt_3dpose_stgcn_output = tgt_3dpose_stgcn_output.permute(0, 2, 3, 1, 4).contiguous()  # (B, 9, 22, N, nhid)
+        tgt_3dpose = tgt_3dpose_stgcn_output.view(B, 9*22, N, self.nhid)  # (B, 198, N, nhid)
+
         tgt_3dpose = self.pose3d_encoder(tgt_3dpose)
 
 

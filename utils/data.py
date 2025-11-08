@@ -61,7 +61,7 @@ def load_data_jta_3dp(split):
 def prepare_data(path, subset='/train/', sample=1.0, goals=True, dataset_name=''):
 
     all_scenes = []
-
+    print(path + subset)
     ## List file names
     ## Iterate over file names
     if dataset_name == 'jta_all_visual_cues':
@@ -79,6 +79,20 @@ def prepare_data(path, subset='/train/', sample=1.0, goals=True, dataset_name=''
             all_scenes += scene
         return all_scenes, None, True
     elif dataset_name == 'jta_3dp':
+        files = [f.split('.')[-2] for f in os.listdir(path + subset) if f.endswith('.ndjson')]
+        for file in files:
+            reader = Reader_jta_3dp(path + subset + '/' + file + '.ndjson', scene_type='paths')
+            scene = [(file, s_id, s) for s_id, s in reader.scenes(sample=sample)]
+            all_scenes += scene
+        return all_scenes, None, True
+    elif dataset_name == 'jta_3dp_occlusion':
+        files = [f.split('.')[-2] for f in os.listdir(path + subset) if f.endswith('.ndjson')]
+        for file in files:
+            reader = Reader_jta_3dp(path + subset + '/' + file + '.ndjson', scene_type='paths')
+            scene = [(file, s_id, s) for s_id, s in reader.scenes(sample=sample)]
+            all_scenes += scene
+        return all_scenes, None, True
+    elif dataset_name == 'jta_3dp_random_occlusion':
         files = [f.split('.')[-2] for f in os.listdir(path + subset) if f.endswith('.ndjson')]
         for file in files:
             reader = Reader_jta_3dp(path + subset + '/' + file + '.ndjson', scene_type='paths')

@@ -1,0 +1,2036 @@
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20250623_163827-vkyq2xw3
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/vkyq2xw3
+Loading dataset jta_3dp
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+Creating bert model.
+Model has 3188546 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.7251141511293815
+Best ADE: 1.725114
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  826.8240389823914
+epoch  0  finished!
+Epoch 0 finished! Training time: 826.82 seconds
+Epoch 1: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6647705104019999
+Best ADE: 1.664771
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  832.8401443958282
+epoch  1  finished!
+Epoch 1 finished! Training time: 832.84 seconds
+Epoch 2: Learning rate adjusted to 0.000100
+time for training:  841.2082755565643
+epoch  2  finished!
+Epoch 2 finished! Training time: 841.21 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6631324240964056
+Best ADE: 1.663132
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  835.5938501358032
+epoch  3  finished!
+Epoch 3 finished! Training time: 835.59 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+time for training:  817.58700299263
+epoch  4  finished!
+Epoch 4 finished! Training time: 817.59 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5994383662412412
+Best ADE: 1.599438
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  820.1395120620728
+epoch  5  finished!
+Epoch 5 finished! Training time: 820.14 seconds
+Epoch 6: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5956118980397014
+Best ADE: 1.595612
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  811.8488981723785
+epoch  6  finished!
+Epoch 6 finished! Training time: 811.85 seconds
+Epoch 7: Learning rate adjusted to 0.000100
+time for training:  811.7793922424316
+epoch  7  finished!
+Epoch 7 finished! Training time: 811.78 seconds
+Epoch 8: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5344988870500347
+Best ADE: 1.534499
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  820.426108121872
+epoch  8  finished!
+Epoch 8 finished! Training time: 820.43 seconds
+Epoch 9: Learning rate adjusted to 0.000100
+time for training:  832.246958732605
+epoch  9  finished!
+Epoch 9 finished! Training time: 832.25 seconds
+Epoch 10: Learning rate adjusted to 0.000100
+time for training:  813.4016020298004
+epoch  10  finished!
+Epoch 10 finished! Training time: 813.40 seconds
+Epoch 11: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.4875259120775306
+Best ADE: 1.487526
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  816.941264629364
+epoch  11  finished!
+Epoch 11 finished! Training time: 816.94 seconds
+Epoch 12: Learning rate adjusted to 0.000100
+time for training:  811.7448329925537
+epoch  12  finished!
+Epoch 12 finished! Training time: 811.75 seconds
+Epoch 13: Learning rate adjusted to 0.000100
+time for training:  819.7270741462708
+epoch  13  finished!
+Epoch 13 finished! Training time: 819.73 seconds
+Epoch 14: Learning rate adjusted to 0.000100
+time for training:  814.0955302715302
+epoch  14  finished!
+Epoch 14 finished! Training time: 814.10 seconds
+Epoch 15: Learning rate adjusted to 0.000100
+time for training:  807.3748965263367
+epoch  15  finished!
+Epoch 15 finished! Training time: 807.38 seconds
+Epoch 16: Learning rate adjusted to 0.000100
+time for training:  808.689222574234
+epoch  16  finished!
+Epoch 16 finished! Training time: 808.69 seconds
+Epoch 17: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.480308219497702
+Best ADE: 1.480308
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  809.7061841487885
+epoch  17  finished!
+Epoch 17 finished! Training time: 809.71 seconds
+Epoch 18: Learning rate adjusted to 0.000100
+time for training:  800.7842392921448
+epoch  18  finished!
+Epoch 18 finished! Training time: 800.78 seconds
+Epoch 19: Learning rate adjusted to 0.000100
+time for training:  811.8973500728607
+epoch  19  finished!
+Epoch 19 finished! Training time: 811.90 seconds
+Epoch 20: Learning rate adjusted to 0.000100
+time for training:  807.9731514453888
+epoch  20  finished!
+Epoch 20 finished! Training time: 807.97 seconds
+Epoch 21: Learning rate adjusted to 0.000100
+time for training:  804.097015619278
+epoch  21  finished!
+Epoch 21 finished! Training time: 804.10 seconds
+Epoch 22: Learning rate adjusted to 0.000100
+time for training:  804.5987594127655
+epoch  22  finished!
+Epoch 22 finished! Training time: 804.60 seconds
+Epoch 23: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.4495546219492694
+Best ADE: 1.449555
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  794.9655520915985
+epoch  23  finished!
+Epoch 23 finished! Training time: 794.97 seconds
+Epoch 24: Learning rate adjusted to 0.000100
+time for training:  800.5662498474121
+epoch  24  finished!
+Epoch 24 finished! Training time: 800.57 seconds
+Epoch 25: Learning rate adjusted to 0.000100
+time for training:  801.6621315479279
+epoch  25  finished!
+Epoch 25 finished! Training time: 801.66 seconds
+Epoch 26: Learning rate adjusted to 0.000100
+time for training:  806.6914529800415
+epoch  26  finished!
+Epoch 26 finished! Training time: 806.69 seconds
+Epoch 27: Learning rate adjusted to 0.000100
+time for training:  796.3484480381012
+epoch  27  finished!
+Epoch 27 finished! Training time: 796.35 seconds
+Epoch 28: Learning rate adjusted to 0.000100
+time for training:  813.0946981906891
+epoch  28  finished!
+Epoch 28 finished! Training time: 813.10 seconds
+Epoch 29: Learning rate adjusted to 0.000100
+time for training:  808.923017501831
+epoch  29  finished!
+Epoch 29 finished! Training time: 808.92 seconds
+Epoch 30: Learning rate adjusted to 0.000100
+time for training:  794.4515569210052
+epoch  30  finished!
+Epoch 30 finished! Training time: 794.45 seconds
+Epoch 31: Learning rate adjusted to 0.000100
+time for training:  815.5023419857025
+epoch  31  finished!
+Epoch 31 finished! Training time: 815.50 seconds
+Epoch 32: Learning rate adjusted to 0.000100
+time for training:  812.8359398841858
+epoch  32  finished!
+Epoch 32 finished! Training time: 812.84 seconds
+Epoch 33: Learning rate adjusted to 0.000100
+time for training:  792.420969247818
+epoch  33  finished!
+Epoch 33 finished! Training time: 792.42 seconds
+Epoch 34: Learning rate adjusted to 0.000100
+time for training:  780.3952569961548
+epoch  34  finished!
+Epoch 34 finished! Training time: 780.40 seconds
+Epoch 35: Learning rate adjusted to 0.000100
+time for training:  801.7841141223907
+epoch  35  finished!
+Epoch 35 finished! Training time: 801.78 seconds
+Epoch 36: Learning rate adjusted to 0.000100
+time for training:  790.0322852134705
+epoch  36  finished!
+Epoch 36 finished! Training time: 790.03 seconds
+Epoch 37: Learning rate adjusted to 0.000100
+time for training:  816.2112972736359
+epoch  37  finished!
+Epoch 37 finished! Training time: 816.21 seconds
+Epoch 38: Learning rate adjusted to 0.000100
+time for training:  801.4836812019348
+epoch  38  finished!
+Epoch 38 finished! Training time: 801.48 seconds
+Epoch 39: Learning rate adjusted to 0.000100
+time for training:  843.9312074184418
+epoch  39  finished!
+Epoch 39 finished! Training time: 843.93 seconds
+Epoch 40: Learning rate adjusted to 0.000010
+time for training:  805.8270268440247
+epoch  40  finished!
+Epoch 40 finished! Training time: 805.83 seconds
+Epoch 41: Learning rate adjusted to 0.000010
+time for training:  815.6570630073547
+epoch  41  finished!
+Epoch 41 finished! Training time: 815.66 seconds
+Epoch 42: Learning rate adjusted to 0.000010
+time for training:  813.282292842865
+epoch  42  finished!
+Epoch 42 finished! Training time: 813.28 seconds
+Epoch 43: Learning rate adjusted to 0.000010
+time for training:  806.9257464408875
+epoch  43  finished!
+Epoch 43 finished! Training time: 806.93 seconds
+Epoch 44: Learning rate adjusted to 0.000010
+time for training:  805.4187614917755
+epoch  44  finished!
+Epoch 44 finished! Training time: 805.42 seconds
+Epoch 45: Learning rate adjusted to 0.000010
+time for training:  810.2398955821991
+epoch  45  finished!
+Epoch 45 finished! Training time: 810.24 seconds
+Epoch 46: Learning rate adjusted to 0.000010
+time for training:  798.537721157074
+epoch  46  finished!
+Epoch 46 finished! Training time: 798.54 seconds
+Epoch 47: Learning rate adjusted to 0.000010
+time for training:  802.0671584606171
+epoch  47  finished!
+Epoch 47 finished! Training time: 802.07 seconds
+Epoch 48: Learning rate adjusted to 0.000010
+time for training:  806.7903823852539
+epoch  48  finished!
+Epoch 48 finished! Training time: 806.79 seconds
+Epoch 49: Learning rate adjusted to 0.000010
+time for training:  815.840633392334
+epoch  49  finished!
+Epoch 49 finished! Training time: 815.84 seconds
+Saving checkpoint to checkpoint.pth.tar.
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  best_val_ade █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:         epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:    epoch_time ▆▇█▇▅▄▄▅▇▅▄▅▅▄▄▃▄▄▄▄▄▃▅▄▃▅▂▁▃▂▃█▄▅▅▄▄▃▃▅
+wandb: learning_rate ████████████████████████████████▁▁▁▁▁▁▁▁
+wandb:    train_loss █▆▆▅▅▅▄▄▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁
+wandb:      val_loss ██▆▅▅▃▄▆▂▃▂▃▃▂▃▄▃▃▁▂▃▄▂▂▂▃▃▃▄▃▂▃▂▂▂▃▂▃▃▃
+wandb: 
+wandb: Run summary:
+wandb:  best_val_ade 1.44955
+wandb:         epoch 49
+wandb:    epoch_time 815.83945
+wandb: learning_rate 1e-05
+wandb:    train_loss 58.56412
+wandb:      val_loss 151.53412
+wandb: 
+wandb: 🚀 View run jta_3dp at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/vkyq2xw3
+wandb: ⭐️ View project at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20250623_163827-vkyq2xw3/logs
+All done.
+
+jta_all
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_all_visual_cues']}, 'MODEL': {'seq_len': 435, 'token_num': 47, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_all', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_all/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_all/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20250624_120526-8du5xmc7
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_all
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/8du5xmc7
+Loading dataset jta_all_visual_cues
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_all[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/8du5xmc7[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20250624_120526-8du5xmc7/logs[0m
+Traceback (most recent call last):
+  File "train_jta.py", line 318, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta.py", line 124, in train
+    dataset_train = ConcatDataset(get_datasets(config['DATA']['train_datasets'], config, logger))
+  File "/home/arashima/social-transmotion/dataset_jta.py", line 167, in get_datasets
+    datasets.append(create_dataset(dataset_name, logger, split="train", track_size=(in_F+out_F), track_cutoff=in_F))
+  File "/home/arashima/social-transmotion/dataset_jta.py", line 153, in create_dataset
+    dataset = JtaAllVisualCuesDataset(**args)
+  File "/home/arashima/social-transmotion/dataset_jta.py", line 119, in __init__
+    super(JtaAllVisualCuesDataset, self).__init__("jta_all_visual_cues", frequency=1, **args)
+  File "/home/arashima/social-transmotion/dataset_jta.py", line 83, in __init__
+    self.initialize()
+  File "/home/arashima/social-transmotion/dataset_jta.py", line 89, in initialize
+    self.load_data()
+  File "/home/arashima/social-transmotion/dataset_jta.py", line 123, in load_data
+    self.data = load_data_jta_all_visual_cues(split=self.split)
+  File "/home/arashima/social-transmotion/utils/data.py", line 32, in load_data_jta_all_visual_cues
+    scene_train = Reader_jta_all_visual_cues.paths_to_xy(paths)
+  File "/home/arashima/social-transmotion/utils/trajnetplusplustools/reader.py", line 228, in paths_to_xy
+    entry[j*4+12+88] = row[j+78]
+IndexError: index 100 is out of bounds for axis 0 with size 92
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_all_visual_cues']}, 'MODEL': {'seq_len': 435, 'token_num': 47, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_all', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_all/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_all/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20250624_135110-lupisypk
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_all
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/lupisypk
+Loading dataset jta_all_visual_cues
+Training on a total of 88719 annotations.
+Loading dataset jta_all_visual_cues
+Creating bert model.
+Model has 3217858 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.838969
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 0 finished! Training time: 1967.22 seconds
+Epoch 1: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.810570
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 1 finished! Training time: 1947.35 seconds
+Epoch 2: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.715725
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 2 finished! Training time: 1934.30 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.625660
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 3 finished! Training time: 1921.93 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.591375
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 4 finished! Training time: 1946.85 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+Epoch 5 finished! Training time: 1907.04 seconds
+Epoch 6: Learning rate adjusted to 0.000100
+Epoch 6 finished! Training time: 1907.61 seconds
+Epoch 7: Learning rate adjusted to 0.000100
+Epoch 7 finished! Training time: 1879.11 seconds
+Epoch 8: Learning rate adjusted to 0.000100
+Epoch 8 finished! Training time: 1878.81 seconds
+Epoch 9: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.587267
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 9 finished! Training time: 1873.12 seconds
+Epoch 10: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.538379
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 10 finished! Training time: 1872.28 seconds
+Epoch 11: Learning rate adjusted to 0.000100
+Epoch 11 finished! Training time: 1870.19 seconds
+Epoch 12: Learning rate adjusted to 0.000100
+Epoch 12 finished! Training time: 1871.32 seconds
+Epoch 13: Learning rate adjusted to 0.000100
+Epoch 13 finished! Training time: 1867.47 seconds
+Epoch 14: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.528276
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 14 finished! Training time: 1865.27 seconds
+Epoch 15: Learning rate adjusted to 0.000100
+Epoch 15 finished! Training time: 1860.42 seconds
+Epoch 16: Learning rate adjusted to 0.000100
+Epoch 16 finished! Training time: 1869.23 seconds
+Epoch 17: Learning rate adjusted to 0.000100
+Epoch 17 finished! Training time: 1853.32 seconds
+Epoch 18: Learning rate adjusted to 0.000100
+Epoch 18 finished! Training time: 1878.51 seconds
+Epoch 19: Learning rate adjusted to 0.000100
+Epoch 19 finished! Training time: 1847.06 seconds
+Epoch 20: Learning rate adjusted to 0.000100
+Epoch 20 finished! Training time: 1847.46 seconds
+Epoch 21: Learning rate adjusted to 0.000100
+Epoch 21 finished! Training time: 1850.62 seconds
+Epoch 22: Learning rate adjusted to 0.000100
+Epoch 22 finished! Training time: 1853.67 seconds
+Epoch 23: Learning rate adjusted to 0.000100
+Epoch 23 finished! Training time: 1859.36 seconds
+Epoch 24: Learning rate adjusted to 0.000100
+Epoch 24 finished! Training time: 1847.96 seconds
+Epoch 25: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.525021
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 25 finished! Training time: 1856.19 seconds
+Epoch 26: Learning rate adjusted to 0.000100
+Epoch 26 finished! Training time: 1849.68 seconds
+Epoch 27: Learning rate adjusted to 0.000100
+Epoch 27 finished! Training time: 1858.32 seconds
+Epoch 28: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.512959
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 28 finished! Training time: 1854.03 seconds
+Epoch 29: Learning rate adjusted to 0.000100
+Epoch 29 finished! Training time: 1849.00 seconds
+Epoch 30: Learning rate adjusted to 0.000100
+Epoch 30 finished! Training time: 1855.50 seconds
+Epoch 31: Learning rate adjusted to 0.000100
+Epoch 31 finished! Training time: 1847.81 seconds
+Epoch 32: Learning rate adjusted to 0.000100
+Epoch 32 finished! Training time: 1849.75 seconds
+Epoch 33: Learning rate adjusted to 0.000100
+Epoch 33 finished! Training time: 1855.44 seconds
+Epoch 34: Learning rate adjusted to 0.000100
+Epoch 34 finished! Training time: 1855.32 seconds
+Epoch 35: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE: 1.511408
+Saving checkpoint to best_val_checkpoint.pth.tar.
+Epoch 35 finished! Training time: 1859.63 seconds
+Epoch 36: Learning rate adjusted to 0.000100
+Epoch 36 finished! Training time: 1886.63 seconds
+Epoch 37: Learning rate adjusted to 0.000100
+Epoch 37 finished! Training time: 1881.58 seconds
+Epoch 38: Learning rate adjusted to 0.000100
+Epoch 38 finished! Training time: 1869.23 seconds
+Epoch 39: Learning rate adjusted to 0.000100
+Epoch 39 finished! Training time: 1880.94 seconds
+Epoch 40: Learning rate adjusted to 0.000010
+Epoch 40 finished! Training time: 1891.27 seconds
+Epoch 41: Learning rate adjusted to 0.000010
+Epoch 41 finished! Training time: 1894.13 seconds
+Epoch 42: Learning rate adjusted to 0.000010
+Epoch 42 finished! Training time: 1915.51 seconds
+Epoch 43: Learning rate adjusted to 0.000010
+Epoch 43 finished! Training time: 1911.32 seconds
+Epoch 44: Learning rate adjusted to 0.000010
+Epoch 44 finished! Training time: 1947.81 seconds
+Epoch 45: Learning rate adjusted to 0.000010
+Epoch 45 finished! Training time: 1912.58 seconds
+Epoch 46: Learning rate adjusted to 0.000010
+Epoch 46 finished! Training time: 1901.60 seconds
+Epoch 47: Learning rate adjusted to 0.000010
+Epoch 47 finished! Training time: 1906.38 seconds
+Epoch 48: Learning rate adjusted to 0.000010
+Epoch 48 finished! Training time: 1998.33 seconds
+Epoch 49: Learning rate adjusted to 0.000010
+Epoch 49 finished! Training time: 1912.34 seconds
+Saving checkpoint to checkpoint.pth.tar.
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  best_val_ade █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:         epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:    epoch_time █▇▆▅▇▅▃▃▃▂▂▂▂▂▁▁▁▁▁▂▂▁▂▁▁▁▁▁▂▃▂▃▄▄▅▇▅▄▄▅
+wandb: learning_rate ████████████████████████████████▁▁▁▁▁▁▁▁
+wandb:    train_loss █▅▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:      val_loss █▇▅▃▃▄▃▄▃▂▃▂▁▄▂▃▃▃▅▃▃▁▂▁▁▂▁▃▂▁▂▂▃▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  best_val_ade 1.51141
+wandb:         epoch 49
+wandb:    epoch_time 1912.33933
+wandb: learning_rate 1e-05
+wandb:    train_loss 52.14643
+wandb:      val_loss 151.17284
+wandb: 
+wandb: 🚀 View run jta_all at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/lupisypk
+wandb: ⭐️ View project at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20250624_135110-lupisypk/logs
+All done.
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251104_194833-pf15c2jj
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/pf15c2jj
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating bert model.
+Model has 3188546 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.7723037179783718
+Best ADE: 1.772304
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  810.9194099903107
+epoch  0  finished!
+Epoch 0 finished! Training time: 810.92 seconds
+Epoch 1: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.700969940030391
+Best ADE: 1.700970
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  814.1070404052734
+epoch  1  finished!
+Epoch 1 finished! Training time: 814.11 seconds
+Epoch 2: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6844609824524355
+Best ADE: 1.684461
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  805.1841862201691
+epoch  2  finished!
+Epoch 2 finished! Training time: 805.18 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6356026039712057
+Best ADE: 1.635603
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  800.8011047840118
+epoch  3  finished!
+Epoch 3 finished! Training time: 800.80 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6063019060346222
+Best ADE: 1.606302
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  800.7787427902222
+epoch  4  finished!
+Epoch 4 finished! Training time: 800.78 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+time for training:  798.5132694244385
+epoch  5  finished!
+Epoch 5 finished! Training time: 798.51 seconds
+Epoch 6: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5950186931294446
+Best ADE: 1.595019
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  801.4281027317047
+epoch  6  finished!
+Epoch 6 finished! Training time: 801.43 seconds
+Epoch 7: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5755287161849825
+Best ADE: 1.575529
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  812.4191153049469
+epoch  7  finished!
+Epoch 7 finished! Training time: 812.42 seconds
+Epoch 8: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5574296085684027
+Best ADE: 1.557430
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  797.6505107879639
+epoch  8  finished!
+Epoch 8 finished! Training time: 797.65 seconds
+Epoch 9: Learning rate adjusted to 0.000100
+time for training:  798.343385219574
+epoch  9  finished!
+Epoch 9 finished! Training time: 798.34 seconds
+Epoch 10: Learning rate adjusted to 0.000100
+time for training:  804.2588300704956
+epoch  10  finished!
+Epoch 10 finished! Training time: 804.26 seconds
+Epoch 11: Learning rate adjusted to 0.000100
+time for training:  808.9707543849945
+epoch  11  finished!
+Epoch 11 finished! Training time: 808.97 seconds
+Epoch 12: Learning rate adjusted to 0.000100
+time for training:  798.1621029376984
+epoch  12  finished!
+Epoch 12 finished! Training time: 798.16 seconds
+Epoch 13: Learning rate adjusted to 0.000100
+time for training:  804.3181409835815
+epoch  13  finished!
+Epoch 13 finished! Training time: 804.32 seconds
+Epoch 14: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5287976344939203
+Best ADE: 1.528798
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  802.0954256057739
+epoch  14  finished!
+Epoch 14 finished! Training time: 802.10 seconds
+Epoch 15: Learning rate adjusted to 0.000100
+time for training:  797.5040621757507
+epoch  15  finished!
+Epoch 15 finished! Training time: 797.50 seconds
+Epoch 16: Learning rate adjusted to 0.000100
+time for training:  796.8164341449738
+epoch  16  finished!
+Epoch 16 finished! Training time: 796.82 seconds
+Epoch 17: Learning rate adjusted to 0.000100
+time for training:  803.3135426044464
+epoch  17  finished!
+Epoch 17 finished! Training time: 803.31 seconds
+Epoch 18: Learning rate adjusted to 0.000100
+time for training:  803.6839594841003
+epoch  18  finished!
+Epoch 18 finished! Training time: 803.68 seconds
+Epoch 19: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.518594412323469
+Best ADE: 1.518594
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  793.0355224609375
+epoch  19  finished!
+Epoch 19 finished! Training time: 793.04 seconds
+Epoch 20: Learning rate adjusted to 0.000100
+time for training:  790.1262407302856
+epoch  20  finished!
+Epoch 20 finished! Training time: 790.13 seconds
+Epoch 21: Learning rate adjusted to 0.000100
+time for training:  798.5242819786072
+epoch  21  finished!
+Epoch 21 finished! Training time: 798.52 seconds
+Epoch 22: Learning rate adjusted to 0.000100
+time for training:  802.2730412483215
+epoch  22  finished!
+Epoch 22 finished! Training time: 802.27 seconds
+Epoch 23: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.4709216178476725
+Best ADE: 1.470922
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  805.1880848407745
+epoch  23  finished!
+Epoch 23 finished! Training time: 805.19 seconds
+Epoch 24: Learning rate adjusted to 0.000100
+time for training:  786.6808524131775
+epoch  24  finished!
+Epoch 24 finished! Training time: 786.68 seconds
+Epoch 25: Learning rate adjusted to 0.000100
+time for training:  798.2535750865936
+epoch  25  finished!
+Epoch 25 finished! Training time: 798.25 seconds
+Epoch 26: Learning rate adjusted to 0.000100
+time for training:  793.5335285663605
+epoch  26  finished!
+Epoch 26 finished! Training time: 793.53 seconds
+Epoch 27: Learning rate adjusted to 0.000100
+time for training:  790.874037027359
+epoch  27  finished!
+Epoch 27 finished! Training time: 790.87 seconds
+Epoch 28: Learning rate adjusted to 0.000100
+time for training:  790.7611827850342
+epoch  28  finished!
+Epoch 28 finished! Training time: 790.76 seconds
+Epoch 29: Learning rate adjusted to 0.000100
+time for training:  792.264787197113
+epoch  29  finished!
+Epoch 29 finished! Training time: 792.27 seconds
+Epoch 30: Learning rate adjusted to 0.000100
+time for training:  793.7996873855591
+epoch  30  finished!
+Epoch 30 finished! Training time: 793.80 seconds
+Epoch 31: Learning rate adjusted to 0.000100
+time for training:  790.3627710342407
+epoch  31  finished!
+Epoch 31 finished! Training time: 790.36 seconds
+Epoch 32: Learning rate adjusted to 0.000100
+time for training:  787.679087638855
+epoch  32  finished!
+Epoch 32 finished! Training time: 787.68 seconds
+Epoch 33: Learning rate adjusted to 0.000100
+time for training:  795.9954280853271
+epoch  33  finished!
+Epoch 33 finished! Training time: 796.00 seconds
+Epoch 34: Learning rate adjusted to 0.000100
+time for training:  794.2239475250244
+epoch  34  finished!
+Epoch 34 finished! Training time: 794.22 seconds
+Epoch 35: Learning rate adjusted to 0.000100
+time for training:  796.3832468986511
+epoch  35  finished!
+Epoch 35 finished! Training time: 796.38 seconds
+Epoch 36: Learning rate adjusted to 0.000100
+time for training:  792.6524608135223
+epoch  36  finished!
+Epoch 36 finished! Training time: 792.65 seconds
+Epoch 37: Learning rate adjusted to 0.000100
+time for training:  786.2431445121765
+epoch  37  finished!
+Epoch 37 finished! Training time: 786.24 seconds
+Epoch 38: Learning rate adjusted to 0.000100
+time for training:  788.6505818367004
+epoch  38  finished!
+Epoch 38 finished! Training time: 788.65 seconds
+Epoch 39: Learning rate adjusted to 0.000100
+time for training:  789.7921624183655
+epoch  39  finished!
+Epoch 39 finished! Training time: 789.79 seconds
+Epoch 40: Learning rate adjusted to 0.000010
+time for training:  797.1693913936615
+epoch  40  finished!
+Epoch 40 finished! Training time: 797.17 seconds
+Epoch 41: Learning rate adjusted to 0.000010
+time for training:  808.7839756011963
+epoch  41  finished!
+Epoch 41 finished! Training time: 808.78 seconds
+Epoch 42: Learning rate adjusted to 0.000010
+time for training:  808.1728572845459
+epoch  42  finished!
+Epoch 42 finished! Training time: 808.17 seconds
+Epoch 43: Learning rate adjusted to 0.000010
+time for training:  790.002504825592
+epoch  43  finished!
+Epoch 43 finished! Training time: 790.00 seconds
+Epoch 44: Learning rate adjusted to 0.000010
+time for training:  809.9000389575958
+epoch  44  finished!
+Epoch 44 finished! Training time: 809.90 seconds
+Epoch 45: Learning rate adjusted to 0.000010
+time for training:  792.2538657188416
+epoch  45  finished!
+Epoch 45 finished! Training time: 792.25 seconds
+Epoch 46: Learning rate adjusted to 0.000010
+time for training:  795.8192434310913
+epoch  46  finished!
+Epoch 46 finished! Training time: 795.82 seconds
+Epoch 47: Learning rate adjusted to 0.000010
+time for training:  795.4855875968933
+epoch  47  finished!
+Epoch 47 finished! Training time: 795.49 seconds
+Epoch 48: Learning rate adjusted to 0.000010
+time for training:  796.605429649353
+epoch  48  finished!
+Epoch 48 finished! Training time: 796.61 seconds
+Epoch 49: Learning rate adjusted to 0.000010
+time for training:  802.3474287986755
+epoch  49  finished!
+Epoch 49 finished! Training time: 802.35 seconds
+Saving checkpoint to checkpoint.pth.tar.
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  best_val_ade █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:         epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇███
+wandb:    epoch_time █▆▅▅▄█▄▄▅▄▅▄▄▅▅▂▄▅▆▁▃▂▂▂▃▁▃▃▃▃▂▂▄▇▆▇▂▃▃▅
+wandb: learning_rate ████████████████████████████████▁▁▁▁▁▁▁▁
+wandb:    train_loss █▆▅▅▅▄▄▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁
+wandb:      val_loss █▆▅▄▅▃▃▃▄▃▄▂▃▃▄▃▂▃▁▂▂▂▃▃▂▁▂▂▅▃▂▃▂▂▂▂▂▂▂▂
+wandb: 
+wandb: Run summary:
+wandb:  best_val_ade 1.47092
+wandb:         epoch 49
+wandb:    epoch_time 802.34686
+wandb: learning_rate 1e-05
+wandb:    train_loss 58.67505
+wandb:      val_loss 152.10243
+wandb: 
+wandb: 🚀 View run jta_3dp at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/pf15c2jj
+wandb: ⭐️ View project at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20251104_194833-pf15c2jj/logs
+All done.
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251105_152009-ay0fcfxr
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/ay0fcfxr
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775330 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_stgcn[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/ay0fcfxr[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251105_152009-ay0fcfxr/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 201, in train
+    loss, pred_joints = compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=epoch, mode='train', optimizer=None)
+  File "train_jta_3dp.py", line 58, in compute_loss
+    pred_joints = model(in_joints, padding_mask, metamask=metamask)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/model_jta_3dp.py", line 161, in forward
+    tgt_3dpose_stgcn_output = self.stgcn(tgt_3dpose_stgcn_input)  # (B*N, nhid, 9, 22)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/stgcn.py", line 96, in forward
+    x = self.data_bn(x)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/batchnorm.py", line 171, in forward
+    return F.batch_norm(
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/functional.py", line 2450, in batch_norm
+    return torch.batch_norm(
+RuntimeError: running_mean should contain 66 elements not 1408
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251105_155417-9mjr32nr
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/9mjr32nr
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775330 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_stgcn[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/9mjr32nr[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251105_155417-9mjr32nr/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 201, in train
+    loss, pred_joints = compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=epoch, mode='train', optimizer=None)
+  File "train_jta_3dp.py", line 58, in compute_loss
+    pred_joints = model(in_joints, padding_mask, metamask=metamask)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/model_jta_3dp.py", line 155, in forward
+    # これにより、同じbatch内の同じpersonのデータが連続して並ぶ
+NameError: name 'tgt_3dpose_9frames' is not defined
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251105_163810-wae3ce2u
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/wae3ce2u
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775330 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_stgcn[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/wae3ce2u[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251105_163810-wae3ce2u/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 201, in train
+    loss, pred_joints = compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=epoch, mode='train', optimizer=None)
+  File "train_jta_3dp.py", line 58, in compute_loss
+    pred_joints = model(in_joints, padding_mask, metamask=metamask)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/model_jta_3dp.py", line 161, in forward
+    tgt_3dpose_stgcn_output = self.stgcn(tgt_3dpose_stgcn_input)  # (B*N, nhid, 9, 22)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/stgcn.py", line 96, in forward
+    x = self.data_bn(x)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/batchnorm.py", line 171, in forward
+    return F.batch_norm(
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/functional.py", line 2450, in batch_norm
+    return torch.batch_norm(
+RuntimeError: running_mean should contain 66 elements not 1408
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251105_165124-094pd2mx
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/094pd2mx
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775330 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_stgcn[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/094pd2mx[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251105_165124-094pd2mx/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 201, in train
+    loss, pred_joints = compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=epoch, mode='train', optimizer=None)
+  File "train_jta_3dp.py", line 58, in compute_loss
+    pred_joints = model(in_joints, padding_mask, metamask=metamask)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/model_jta_3dp.py", line 157, in forward
+    tgt_3dpose_stgcn_input = tgt_3dpose_stgcn_input.view(BN, 9, 22, 64)  # (B*N, 9, 22, 64)
+RuntimeError: shape '[56, 9, 22, 64]' is invalid for input of size 33264
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251105_170243-1b7rf6ld
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/1b7rf6ld
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775330 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.9604195323692633
+Best ADE: 1.960420
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  920.7946557998657
+epoch  0  finished!
+Epoch 0 finished! Training time: 920.80 seconds
+Epoch 1: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.7408751845179233
+Best ADE: 1.740875
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  904.8703446388245
+epoch  1  finished!
+Epoch 1 finished! Training time: 904.87 seconds
+Epoch 2: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6255459081855763
+Best ADE: 1.625546
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  895.5658731460571
+epoch  2  finished!
+Epoch 2 finished! Training time: 895.57 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+time for training:  887.8873465061188
+epoch  3  finished!
+Epoch 3 finished! Training time: 887.89 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5836729664849367
+Best ADE: 1.583673
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  883.4605669975281
+epoch  4  finished!
+Epoch 4 finished! Training time: 883.46 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+time for training:  888.4977231025696
+epoch  5  finished!
+Epoch 5 finished! Training time: 888.50 seconds
+Epoch 6: Learning rate adjusted to 0.000100
+time for training:  890.1869928836823
+epoch  6  finished!
+Epoch 6 finished! Training time: 890.19 seconds
+Epoch 7: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5650478363679132
+Best ADE: 1.565048
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  891.2092208862305
+epoch  7  finished!
+Epoch 7 finished! Training time: 891.21 seconds
+Epoch 8: Learning rate adjusted to 0.000100
+time for training:  886.8692758083344
+epoch  8  finished!
+Epoch 8 finished! Training time: 886.87 seconds
+Epoch 9: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5405231940656023
+Best ADE: 1.540523
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  883.1079955101013
+epoch  9  finished!
+Epoch 9 finished! Training time: 883.11 seconds
+Epoch 10: Learning rate adjusted to 0.000100
+time for training:  887.8124511241913
+epoch  10  finished!
+Epoch 10 finished! Training time: 887.81 seconds
+Epoch 11: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5105820716654603
+Best ADE: 1.510582
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  876.4367821216583
+epoch  11  finished!
+Epoch 11 finished! Training time: 876.44 seconds
+Epoch 12: Learning rate adjusted to 0.000100
+time for training:  871.2191460132599
+epoch  12  finished!
+Epoch 12 finished! Training time: 871.22 seconds
+Epoch 13: Learning rate adjusted to 0.000100
+time for training:  875.4893863201141
+epoch  13  finished!
+Epoch 13 finished! Training time: 875.49 seconds
+Epoch 14: Learning rate adjusted to 0.000100
+time for training:  856.9961974620819
+epoch  14  finished!
+Epoch 14 finished! Training time: 857.00 seconds
+Epoch 15: Learning rate adjusted to 0.000100
+time for training:  873.7509105205536
+epoch  15  finished!
+Epoch 15 finished! Training time: 873.75 seconds
+Epoch 16: Learning rate adjusted to 0.000100
+time for training:  886.9977715015411
+epoch  16  finished!
+Epoch 16 finished! Training time: 887.00 seconds
+Epoch 17: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.506206873344004
+Best ADE: 1.506207
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  879.8009359836578
+epoch  17  finished!
+Epoch 17 finished! Training time: 879.80 seconds
+Epoch 18: Learning rate adjusted to 0.000100
+time for training:  883.0693283081055
+epoch  18  finished!
+Epoch 18 finished! Training time: 883.07 seconds
+Epoch 19: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5055517325595253
+Best ADE: 1.505552
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  880.518159866333
+epoch  19  finished!
+Epoch 19 finished! Training time: 880.52 seconds
+Epoch 20: Learning rate adjusted to 0.000100
+time for training:  863.615213394165
+epoch  20  finished!
+Epoch 20 finished! Training time: 863.62 seconds
+Epoch 21: Learning rate adjusted to 0.000100
+time for training:  861.1756658554077
+epoch  21  finished!
+Epoch 21 finished! Training time: 861.18 seconds
+Epoch 22: Learning rate adjusted to 0.000100
+time for training:  863.8125176429749
+epoch  22  finished!
+Epoch 22 finished! Training time: 863.81 seconds
+Epoch 23: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5048964698384888
+Best ADE: 1.504896
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  858.9395260810852
+epoch  23  finished!
+Epoch 23 finished! Training time: 858.94 seconds
+Epoch 24: Learning rate adjusted to 0.000100
+time for training:  865.288551568985
+epoch  24  finished!
+Epoch 24 finished! Training time: 865.29 seconds
+Epoch 25: Learning rate adjusted to 0.000100
+time for training:  866.1309833526611
+epoch  25  finished!
+Epoch 25 finished! Training time: 866.13 seconds
+Epoch 26: Learning rate adjusted to 0.000100
+time for training:  857.6949934959412
+epoch  26  finished!
+Epoch 26 finished! Training time: 857.70 seconds
+Epoch 27: Learning rate adjusted to 0.000100
+time for training:  879.4657130241394
+epoch  27  finished!
+Epoch 27 finished! Training time: 879.47 seconds
+Epoch 28: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.503237767351961
+Best ADE: 1.503238
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  854.4120707511902
+epoch  28  finished!
+Epoch 28 finished! Training time: 854.41 seconds
+Epoch 29: Learning rate adjusted to 0.000100
+time for training:  862.2501993179321
+epoch  29  finished!
+Epoch 29 finished! Training time: 862.25 seconds
+Epoch 30: Learning rate adjusted to 0.000100
+time for training:  859.8901934623718
+epoch  30  finished!
+Epoch 30 finished! Training time: 859.89 seconds
+Epoch 31: Learning rate adjusted to 0.000100
+time for training:  858.7004265785217
+epoch  31  finished!
+Epoch 31 finished! Training time: 858.70 seconds
+Epoch 32: Learning rate adjusted to 0.000100
+time for training:  854.1229250431061
+epoch  32  finished!
+Epoch 32 finished! Training time: 854.12 seconds
+Epoch 33: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.4966164772707815
+Best ADE: 1.496616
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  853.3558940887451
+epoch  33  finished!
+Epoch 33 finished! Training time: 853.36 seconds
+Epoch 34: Learning rate adjusted to 0.000100
+time for training:  851.6458303928375
+epoch  34  finished!
+Epoch 34 finished! Training time: 851.65 seconds
+Epoch 35: Learning rate adjusted to 0.000100
+time for training:  857.9932327270508
+epoch  35  finished!
+Epoch 35 finished! Training time: 857.99 seconds
+Epoch 36: Learning rate adjusted to 0.000100
+time for training:  854.5532817840576
+epoch  36  finished!
+Epoch 36 finished! Training time: 854.55 seconds
+Epoch 37: Learning rate adjusted to 0.000100
+time for training:  857.8439090251923
+epoch  37  finished!
+Epoch 37 finished! Training time: 857.84 seconds
+Epoch 38: Learning rate adjusted to 0.000100
+time for training:  855.1687016487122
+epoch  38  finished!
+Epoch 38 finished! Training time: 855.17 seconds
+Epoch 39: Learning rate adjusted to 0.000100
+time for training:  860.2372076511383
+epoch  39  finished!
+Epoch 39 finished! Training time: 860.24 seconds
+Epoch 40: Learning rate adjusted to 0.000010
+time for training:  852.1511981487274
+epoch  40  finished!
+Epoch 40 finished! Training time: 852.15 seconds
+Epoch 41: Learning rate adjusted to 0.000010
+time for training:  853.1289865970612
+epoch  41  finished!
+Epoch 41 finished! Training time: 853.13 seconds
+Epoch 42: Learning rate adjusted to 0.000010
+time for training:  853.5308566093445
+epoch  42  finished!
+Epoch 42 finished! Training time: 853.53 seconds
+Epoch 43: Learning rate adjusted to 0.000010
+time for training:  856.2519059181213
+epoch  43  finished!
+Epoch 43 finished! Training time: 856.25 seconds
+Epoch 44: Learning rate adjusted to 0.000010
+time for training:  852.674996137619
+epoch  44  finished!
+Epoch 44 finished! Training time: 852.68 seconds
+Epoch 45: Learning rate adjusted to 0.000010
+time for training:  856.057407617569
+epoch  45  finished!
+Epoch 45 finished! Training time: 856.06 seconds
+Epoch 46: Learning rate adjusted to 0.000010
+time for training:  851.1425395011902
+epoch  46  finished!
+Epoch 46 finished! Training time: 851.14 seconds
+Epoch 47: Learning rate adjusted to 0.000010
+time for training:  854.016722202301
+epoch  47  finished!
+Epoch 47 finished! Training time: 854.02 seconds
+Epoch 48: Learning rate adjusted to 0.000010
+time for training:  850.1347877979279
+epoch  48  finished!
+Epoch 48 finished! Training time: 850.14 seconds
+Epoch 49: Learning rate adjusted to 0.000010
+time for training:  847.2369868755341
+epoch  49  finished!
+Epoch 49 finished! Training time: 847.24 seconds
+Saving checkpoint to checkpoint.pth.tar.
+wandb: uploading config.yaml
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  best_val_ade █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:         epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:    epoch_time █▆▆▅▄▅▅▅▄▅▃▄▂▄▅▄▄▃▂▃▃▃▂▄▂▂▂▂▂▁▂▂▂▁▂▂▂▁▂▁
+wandb: learning_rate ████████████████████████████████▁▁▁▁▁▁▁▁
+wandb:    train_loss █▆▅▅▅▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:      val_loss █▅▃▃▂▃▂▂▂▂▁▁▁▁▁▁▁▂▁▂▂▂▂▁▁▁▂▃▁▃▂▃▃▂▁▁▁▁▁▂
+wandb: 
+wandb: Run summary:
+wandb:  best_val_ade 1.49662
+wandb:         epoch 49
+wandb:    epoch_time 847.23639
+wandb: learning_rate 1e-05
+wandb:    train_loss 54.93717
+wandb:      val_loss 153.894
+wandb: 
+wandb: 🚀 View run jta_3dp_stgcn at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/1b7rf6ld
+wandb: ⭐️ View project at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20251105_170243-1b7rf6ld/logs
+All done.
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251106_125259-wevk4myb
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn_encoder
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/wevk4myb
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775586 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_stgcn_encoder[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/wevk4myb[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251106_125259-wevk4myb/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 201, in train
+    loss, pred_joints = compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=epoch, mode='train', optimizer=None)
+  File "train_jta_3dp.py", line 58, in compute_loss
+    pred_joints = model(in_joints, padding_mask, metamask=metamask)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/model_jta_3dp_stgcn.py", line 155, in forward
+    tgt_3dpose_stgcn_input = tgt_3dpose_stgcn_input.view(BN, 9, 22, 64)  # (B*N, 9, 22, 64)
+RuntimeError: shape '[140, 9, 22, 64]' is invalid for input of size 8279040
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251106_142107-vagxjpfi
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn_encoder
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/vagxjpfi
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775330 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_stgcn_encoder[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/vagxjpfi[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251106_142107-vagxjpfi/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 201, in train
+    loss, pred_joints = compute_loss(model, config, in_joints, out_joints, in_masks, out_masks, padding_mask, epoch=epoch, mode='train', optimizer=None)
+  File "train_jta_3dp.py", line 58, in compute_loss
+    pred_joints = model(in_joints, padding_mask, metamask=metamask)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/arashima/social-transmotion/model_jta_3dp_stgcn.py", line 155, in forward
+    tgt_3dpose_stgcn_input = tgt_3dpose_stgcn_input.view(BN, 9, 22, 64)  # (B*N, 9, 22, 64)
+RuntimeError: shape '[56, 9, 22, 64]' is invalid for input of size 1655808
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_stgcn_encoder/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251106_143842-73b6oqz6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_stgcn_encoder
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/73b6oqz6
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+Model has 3775330 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.8517980631096669
+Best ADE: 1.851798
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  919.2945508956909
+epoch  0  finished!
+Epoch 0 finished! Training time: 919.29 seconds
+Epoch 1: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.7222951862608065
+Best ADE: 1.722295
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  921.8956599235535
+epoch  1  finished!
+Epoch 1 finished! Training time: 921.90 seconds
+Epoch 2: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6327782047052368
+Best ADE: 1.632778
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  931.6455764770508
+epoch  2  finished!
+Epoch 2 finished! Training time: 931.65 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5557816173665822
+Best ADE: 1.555782
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  936.261069059372
+epoch  3  finished!
+Epoch 3 finished! Training time: 936.26 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+time for training:  925.4843831062317
+epoch  4  finished!
+Epoch 4 finished! Training time: 925.48 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5314450880909367
+Best ADE: 1.531445
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  933.8575510978699
+epoch  5  finished!
+Epoch 5 finished! Training time: 933.86 seconds
+Epoch 6: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5303305459898617
+Best ADE: 1.530331
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  919.1689162254333
+epoch  6  finished!
+Epoch 6 finished! Training time: 919.17 seconds
+Epoch 7: Learning rate adjusted to 0.000100
+time for training:  922.9398562908173
+epoch  7  finished!
+Epoch 7 finished! Training time: 922.94 seconds
+Epoch 8: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5271071920515278
+Best ADE: 1.527107
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  928.9904973506927
+epoch  8  finished!
+Epoch 8 finished! Training time: 928.99 seconds
+Epoch 9: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5229606653670944
+Best ADE: 1.522961
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  928.056232213974
+epoch  9  finished!
+Epoch 9 finished! Training time: 928.06 seconds
+Epoch 10: Learning rate adjusted to 0.000100
+time for training:  923.6837220191956
+epoch  10  finished!
+Epoch 10 finished! Training time: 923.68 seconds
+Epoch 11: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.519897925613639
+Best ADE: 1.519898
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  929.6062133312225
+epoch  11  finished!
+Epoch 11 finished! Training time: 929.61 seconds
+Epoch 12: Learning rate adjusted to 0.000100
+time for training:  889.1900668144226
+epoch  12  finished!
+Epoch 12 finished! Training time: 889.19 seconds
+Epoch 13: Learning rate adjusted to 0.000100
+time for training:  881.1110281944275
+epoch  13  finished!
+Epoch 13 finished! Training time: 881.11 seconds
+Epoch 14: Learning rate adjusted to 0.000100
+time for training:  869.111743927002
+epoch  14  finished!
+Epoch 14 finished! Training time: 869.11 seconds
+Epoch 15: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.4678225402190006
+Best ADE: 1.467823
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  868.2014553546906
+epoch  15  finished!
+Epoch 15 finished! Training time: 868.20 seconds
+Epoch 16: Learning rate adjusted to 0.000100
+time for training:  870.5807394981384
+epoch  16  finished!
+Epoch 16 finished! Training time: 870.58 seconds
+Epoch 17: Learning rate adjusted to 0.000100
+time for training:  872.3786470890045
+epoch  17  finished!
+Epoch 17 finished! Training time: 872.38 seconds
+Epoch 18: Learning rate adjusted to 0.000100
+time for training:  869.6651935577393
+epoch  18  finished!
+Epoch 18 finished! Training time: 869.67 seconds
+Epoch 19: Learning rate adjusted to 0.000100
+time for training:  876.2530052661896
+epoch  19  finished!
+Epoch 19 finished! Training time: 876.25 seconds
+Epoch 20: Learning rate adjusted to 0.000100
+time for training:  878.3083083629608
+epoch  20  finished!
+Epoch 20 finished! Training time: 878.31 seconds
+Epoch 21: Learning rate adjusted to 0.000100
+time for training:  865.740606546402
+epoch  21  finished!
+Epoch 21 finished! Training time: 865.74 seconds
+Epoch 22: Learning rate adjusted to 0.000100
+time for training:  864.5011587142944
+epoch  22  finished!
+Epoch 22 finished! Training time: 864.50 seconds
+Epoch 23: Learning rate adjusted to 0.000100
+time for training:  860.3775110244751
+epoch  23  finished!
+Epoch 23 finished! Training time: 860.38 seconds
+Epoch 24: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.4248911789175838
+Best ADE: 1.424891
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  865.1793217658997
+epoch  24  finished!
+Epoch 24 finished! Training time: 865.18 seconds
+Epoch 25: Learning rate adjusted to 0.000100
+time for training:  865.1582722663879
+epoch  25  finished!
+Epoch 25 finished! Training time: 865.16 seconds
+Epoch 26: Learning rate adjusted to 0.000100
+time for training:  864.9435679912567
+epoch  26  finished!
+Epoch 26 finished! Training time: 864.94 seconds
+Epoch 27: Learning rate adjusted to 0.000100
+time for training:  862.337878704071
+epoch  27  finished!
+Epoch 27 finished! Training time: 862.34 seconds
+Epoch 28: Learning rate adjusted to 0.000100
+time for training:  859.1600451469421
+epoch  28  finished!
+Epoch 28 finished! Training time: 859.16 seconds
+Epoch 29: Learning rate adjusted to 0.000100
+time for training:  867.5681684017181
+epoch  29  finished!
+Epoch 29 finished! Training time: 867.57 seconds
+Epoch 30: Learning rate adjusted to 0.000100
+time for training:  863.1555228233337
+epoch  30  finished!
+Epoch 30 finished! Training time: 863.16 seconds
+Epoch 31: Learning rate adjusted to 0.000100
+time for training:  864.7620813846588
+epoch  31  finished!
+Epoch 31 finished! Training time: 864.76 seconds
+Epoch 32: Learning rate adjusted to 0.000100
+time for training:  858.7606678009033
+epoch  32  finished!
+Epoch 32 finished! Training time: 858.76 seconds
+Epoch 33: Learning rate adjusted to 0.000100
+time for training:  861.0801928043365
+epoch  33  finished!
+Epoch 33 finished! Training time: 861.08 seconds
+Epoch 34: Learning rate adjusted to 0.000100
+time for training:  863.5834128856659
+epoch  34  finished!
+Epoch 34 finished! Training time: 863.58 seconds
+Epoch 35: Learning rate adjusted to 0.000100
+time for training:  872.3726181983948
+epoch  35  finished!
+Epoch 35 finished! Training time: 872.37 seconds
+Epoch 36: Learning rate adjusted to 0.000100
+time for training:  897.924812078476
+epoch  36  finished!
+Epoch 36 finished! Training time: 897.93 seconds
+Epoch 37: Learning rate adjusted to 0.000100
+time for training:  968.2928717136383
+epoch  37  finished!
+Epoch 37 finished! Training time: 968.29 seconds
+Epoch 38: Learning rate adjusted to 0.000100
+time for training:  903.7537097930908
+epoch  38  finished!
+Epoch 38 finished! Training time: 903.75 seconds
+Epoch 39: Learning rate adjusted to 0.000100
+time for training:  869.9739921092987
+epoch  39  finished!
+Epoch 39 finished! Training time: 869.97 seconds
+Epoch 40: Learning rate adjusted to 0.000010
+time for training:  874.2741887569427
+epoch  40  finished!
+Epoch 40 finished! Training time: 874.27 seconds
+Epoch 41: Learning rate adjusted to 0.000010
+time for training:  878.2185225486755
+epoch  41  finished!
+Epoch 41 finished! Training time: 878.22 seconds
+Epoch 42: Learning rate adjusted to 0.000010
+time for training:  881.7918484210968
+epoch  42  finished!
+Epoch 42 finished! Training time: 881.79 seconds
+Epoch 43: Learning rate adjusted to 0.000010
+time for training:  880.3747489452362
+epoch  43  finished!
+Epoch 43 finished! Training time: 880.38 seconds
+Epoch 44: Learning rate adjusted to 0.000010
+time for training:  891.0860335826874
+epoch  44  finished!
+Epoch 44 finished! Training time: 891.09 seconds
+Epoch 45: Learning rate adjusted to 0.000010
+time for training:  890.2256231307983
+epoch  45  finished!
+Epoch 45 finished! Training time: 890.23 seconds
+Epoch 46: Learning rate adjusted to 0.000010
+time for training:  890.1834480762482
+epoch  46  finished!
+Epoch 46 finished! Training time: 890.18 seconds
+Epoch 47: Learning rate adjusted to 0.000010
+time for training:  889.5209336280823
+epoch  47  finished!
+Epoch 47 finished! Training time: 889.52 seconds
+Epoch 48: Learning rate adjusted to 0.000010
+time for training:  888.1660072803497
+epoch  48  finished!
+Epoch 48 finished! Training time: 888.17 seconds
+Epoch 49: Learning rate adjusted to 0.000010
+time for training:  883.6528604030609
+epoch  49  finished!
+Epoch 49 finished! Training time: 883.65 seconds
+Saving checkpoint to checkpoint.pth.tar.
+wandb: uploading output.log; uploading config.yaml
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  best_val_ade █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:         epoch ▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:    epoch_time ▅▅▆▆▅▅▅▅▅▆▂▂▂▂▂▂▂▁▁▁▁▁▁▁▂▁▁▁▁▂█▄▂▂▂▂▃▃▃▃
+wandb: learning_rate █████████████████████████████████▁▁▁▁▁▁▁
+wandb:    train_loss █▆▅▅▅▄▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁
+wandb:      val_loss █▆▄▃▄▃▃▃▃▃▃▃▃▂▃▂▂▂▂▂▁▃▁▂▂▁▂▂▃▂▂▂▂▁▂▁▂▂▂▂
+wandb: 
+wandb: Run summary:
+wandb:  best_val_ade 1.42489
+wandb:         epoch 49
+wandb:    epoch_time 883.65225
+wandb: learning_rate 1e-05
+wandb:    train_loss 57.51848
+wandb:      val_loss 146.66497
+wandb: 
+wandb: 🚀 View run jta_3dp_stgcn_encoder at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/73b6oqz6
+wandb: ⭐️ View project at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20251106_143842-73b6oqz6/logs
+All done.
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1, 'backbone_ckpt': './finetune/jta_3dp_stgcn/checkpoints/best_val_checkpoint.pth.tar'}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251107_070106-anfu9k4w
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_finetune
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/anfu9k4w
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_finetune[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/anfu9k4w[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251107_070106-anfu9k4w/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 140, in train
+    model = create_model(config, logger)
+  File "/home/arashima/social-transmotion/model_jta_3dp_finetune.py", line 316, in create_model
+    load_and_freeze_backbone_for_transmotion(model, ckpt_path, device=config["DEVICE"])
+  File "/home/arashima/social-transmotion/model_jta_3dp_finetune.py", line 328, in load_and_freeze_backbone_for_transmotion
+    ckpt = torch.load(ckpt_path, map_location=device)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/serialization.py", line 771, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/serialization.py", line 270, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/serialization.py", line 251, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: './finetune/jta_3dp_stgcn/checkpoints/best_val_checkpoint.pth.tar'
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1, 'backbone_ckpt': './finetune/jta_3dp_stgcn/checkpoints/encoder_final.pth'}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251107_090701-1zdvxews
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_finetune
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/1zdvxews
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mjta_3dp_finetune[0m at: [34mhttps://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/1zdvxews[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251107_090701-1zdvxews/logs[0m
+Traceback (most recent call last):
+  File "train_jta_3dp.py", line 321, in <module>
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+  File "train_jta_3dp.py", line 140, in train
+    model = create_model(config, logger)
+  File "/home/arashima/social-transmotion/model_jta_3dp_finetune.py", line 316, in create_model
+    load_and_freeze_backbone_for_transmotion(model, ckpt_path, device=config["DEVICE"])
+  File "/home/arashima/social-transmotion/model_jta_3dp_finetune.py", line 328, in load_and_freeze_backbone_for_transmotion
+    ckpt = torch.load(ckpt_path, map_location=device)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/serialization.py", line 771, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/serialization.py", line 270, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/arashima/anaconda3/envs/social-transmotion/lib/python3.8/site-packages/torch/serialization.py", line 251, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: './finetune/jta_3dp_stgcn/checkpoints/encoder_final.pth'
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1, 'backbone_ckpt': './finetune/jta_3dp_stgcn/checkpoints/encoder_final.pth'}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251107_100658-lo3tmzzj
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_finetune
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/lo3tmzzj
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+[backbone] loaded 42 tensors (missing=0, unexpected=0)
+[backbone] fc_in_3dpose & stgcn are FROZEN (incl. BN eval).
+Model has 3060034 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.8739469429540434
+Best ADE: 1.873947
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  815.3338258266449
+epoch  0  finished!
+Epoch 0 finished! Training time: 815.33 seconds
+Epoch 1: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.8333633464797183
+Best ADE: 1.833363
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  841.9700319766998
+epoch  1  finished!
+Epoch 1 finished! Training time: 841.97 seconds
+Epoch 2: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6444316644976218
+Best ADE: 1.644432
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  846.411871433258
+epoch  2  finished!
+Epoch 2 finished! Training time: 846.41 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6359619483252226
+Best ADE: 1.635962
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  843.543788433075
+epoch  3  finished!
+Epoch 3 finished! Training time: 843.54 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6247064280891153
+Best ADE: 1.624706
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  839.0991144180298
+epoch  4  finished!
+Epoch 4 finished! Training time: 839.10 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+time for training:  842.7232398986816
+epoch  5  finished!
+Epoch 5 finished! Training time: 842.72 seconds
+Epoch 6: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5855865679255374
+Best ADE: 1.585587
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  845.8148365020752
+epoch  6  finished!
+Epoch 6 finished! Training time: 845.82 seconds
+Epoch 7: Learning rate adjusted to 0.000100
+time for training:  850.6124017238617
+epoch  7  finished!
+Epoch 7 finished! Training time: 850.61 seconds
+Epoch 8: Learning rate adjusted to 0.000100
+time for training:  851.9496235847473
+epoch  8  finished!
+Epoch 8 finished! Training time: 851.95 seconds
+Epoch 9: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5376710325564775
+Best ADE: 1.537671
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  855.5258882045746
+epoch  9  finished!
+Epoch 9 finished! Training time: 855.53 seconds
+Epoch 10: Learning rate adjusted to 0.000100
+time for training:  844.7077746391296
+epoch  10  finished!
+Epoch 10 finished! Training time: 844.71 seconds
+Epoch 11: Learning rate adjusted to 0.000100
+time for training:  856.7668154239655
+epoch  11  finished!
+Epoch 11 finished! Training time: 856.77 seconds
+Epoch 12: Learning rate adjusted to 0.000100
+time for training:  862.2291505336761
+epoch  12  finished!
+Epoch 12 finished! Training time: 862.23 seconds
+Epoch 13: Learning rate adjusted to 0.000100
+time for training:  841.7149014472961
+epoch  13  finished!
+Epoch 13 finished! Training time: 841.72 seconds
+Epoch 14: Learning rate adjusted to 0.000100
+time for training:  852.1837327480316
+epoch  14  finished!
+Epoch 14 finished! Training time: 852.18 seconds
+Epoch 15: Learning rate adjusted to 0.000100
+time for training:  920.1124668121338
+epoch  15  finished!
+Epoch 15 finished! Training time: 920.11 seconds
+Epoch 16: Learning rate adjusted to 0.000100
+time for training:  889.6611199378967
+epoch  16  finished!
+Epoch 16 finished! Training time: 889.66 seconds
+Epoch 17: Learning rate adjusted to 0.000100
+time for training:  848.0589849948883
+epoch  17  finished!
+Epoch 17 finished! Training time: 848.06 seconds
+Epoch 18: Learning rate adjusted to 0.000100
+time for training:  863.7785608768463
+epoch  18  finished!
+Epoch 18 finished! Training time: 863.78 seconds
+Epoch 19: Learning rate adjusted to 0.000100
+time for training:  854.7464699745178
+epoch  19  finished!
+Epoch 19 finished! Training time: 854.75 seconds
+Epoch 20: Learning rate adjusted to 0.000100
+time for training:  847.916980266571
+epoch  20  finished!
+Epoch 20 finished! Training time: 847.92 seconds
+Epoch 21: Learning rate adjusted to 0.000100
+time for training:  856.7706391811371
+epoch  21  finished!
+Epoch 21 finished! Training time: 856.77 seconds
+Epoch 22: Learning rate adjusted to 0.000100
+time for training:  867.4994008541107
+epoch  22  finished!
+Epoch 22 finished! Training time: 867.50 seconds
+Epoch 23: Learning rate adjusted to 0.000100
+time for training:  850.3868293762207
+epoch  23  finished!
+Epoch 23 finished! Training time: 850.39 seconds
+Epoch 24: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5142674328561918
+Best ADE: 1.514267
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  831.5555844306946
+epoch  24  finished!
+Epoch 24 finished! Training time: 831.56 seconds
+Epoch 25: Learning rate adjusted to 0.000100
+time for training:  838.5231084823608
+epoch  25  finished!
+Epoch 25 finished! Training time: 838.52 seconds
+Epoch 26: Learning rate adjusted to 0.000100
+time for training:  842.8045625686646
+epoch  26  finished!
+Epoch 26 finished! Training time: 842.80 seconds
+Epoch 27: Learning rate adjusted to 0.000100
+time for training:  840.9265930652618
+epoch  27  finished!
+Epoch 27 finished! Training time: 840.93 seconds
+Epoch 28: Learning rate adjusted to 0.000100
+time for training:  823.6225707530975
+epoch  28  finished!
+Epoch 28 finished! Training time: 823.62 seconds
+Epoch 29: Learning rate adjusted to 0.000100
+time for training:  824.438000202179
+epoch  29  finished!
+Epoch 29 finished! Training time: 824.44 seconds
+Epoch 30: Learning rate adjusted to 0.000100
+time for training:  849.9003779888153
+epoch  30  finished!
+Epoch 30 finished! Training time: 849.90 seconds
+Epoch 31: Learning rate adjusted to 0.000100
+time for training:  848.7236268520355
+epoch  31  finished!
+Epoch 31 finished! Training time: 848.72 seconds
+Epoch 32: Learning rate adjusted to 0.000100
+time for training:  1019.7562928199768
+epoch  32  finished!
+Epoch 32 finished! Training time: 1019.76 seconds
+Epoch 33: Learning rate adjusted to 0.000100
+time for training:  835.7516095638275
+epoch  33  finished!
+Epoch 33 finished! Training time: 835.75 seconds
+Epoch 34: Learning rate adjusted to 0.000100
+time for training:  938.740528345108
+epoch  34  finished!
+Epoch 34 finished! Training time: 938.74 seconds
+Epoch 35: Learning rate adjusted to 0.000100
+time for training:  840.5759325027466
+epoch  35  finished!
+Epoch 35 finished! Training time: 840.58 seconds
+Epoch 36: Learning rate adjusted to 0.000100
+time for training:  864.2611751556396
+epoch  36  finished!
+Epoch 36 finished! Training time: 864.26 seconds
+Epoch 37: Learning rate adjusted to 0.000100
+time for training:  931.6943490505219
+epoch  37  finished!
+Epoch 37 finished! Training time: 931.69 seconds
+Epoch 38: Learning rate adjusted to 0.000100
+time for training:  933.8105032444
+epoch  38  finished!
+Epoch 38 finished! Training time: 933.81 seconds
+Epoch 39: Learning rate adjusted to 0.000100
+time for training:  870.9230251312256
+epoch  39  finished!
+Epoch 39 finished! Training time: 870.92 seconds
+Epoch 40: Learning rate adjusted to 0.000010
+time for training:  895.0639662742615
+epoch  40  finished!
+Epoch 40 finished! Training time: 895.06 seconds
+Epoch 41: Learning rate adjusted to 0.000010
+time for training:  859.5982563495636
+epoch  41  finished!
+Epoch 41 finished! Training time: 859.60 seconds
+Epoch 42: Learning rate adjusted to 0.000010
+time for training:  841.3224680423737
+epoch  42  finished!
+Epoch 42 finished! Training time: 841.32 seconds
+Epoch 43: Learning rate adjusted to 0.000010
+time for training:  820.9043867588043
+epoch  43  finished!
+Epoch 43 finished! Training time: 820.90 seconds
+Epoch 44: Learning rate adjusted to 0.000010
+time for training:  807.2637960910797
+epoch  44  finished!
+Epoch 44 finished! Training time: 807.26 seconds
+Epoch 45: Learning rate adjusted to 0.000010
+time for training:  813.0016450881958
+epoch  45  finished!
+Epoch 45 finished! Training time: 813.00 seconds
+Epoch 46: Learning rate adjusted to 0.000010
+time for training:  812.7544302940369
+epoch  46  finished!
+Epoch 46 finished! Training time: 812.75 seconds
+Epoch 47: Learning rate adjusted to 0.000010
+time for training:  1014.8917045593262
+epoch  47  finished!
+Epoch 47 finished! Training time: 1014.89 seconds
+Epoch 48: Learning rate adjusted to 0.000010
+time for training:  918.732608795166
+epoch  48  finished!
+Epoch 48 finished! Training time: 918.73 seconds
+Epoch 49: Learning rate adjusted to 0.000010
+time for training:  816.6580905914307
+epoch  49  finished!
+Epoch 49 finished! Training time: 816.66 seconds
+Saving checkpoint to checkpoint.pth.tar.
+wandb: uploading output.log; uploading config.yaml
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  best_val_ade █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:         epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:    epoch_time ▁▂▂▂▂▂▂▂▂▃▂▂▅▄▂▃▂▃▃▂▂▂▂▂▂▂█▂▅▂▅▅▃▄▃▁▁▁█▁
+wandb: learning_rate ████████████████████████████████▁▁▁▁▁▁▁▁
+wandb:    train_loss █▆▅▅▅▄▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:      val_loss █▇▃▃▃▂▄▃▁▁▂▁▃▂▁▁▂▂▃▂▂▂▁▂▂▃▂▂▃▃▂▂▁▁▁▁▁▁▁▂
+wandb: 
+wandb: Run summary:
+wandb:  best_val_ade 1.51427
+wandb:         epoch 49
+wandb:    epoch_time 816.65755
+wandb: learning_rate 1e-05
+wandb:    train_loss 68.20424
+wandb:      val_loss 156.40406
+wandb: 
+wandb: 🚀 View run jta_3dp_finetune at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/lo3tmzzj
+wandb: ⭐️ View project at: https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20251107_100658-lo3tmzzj/logs
+All done.
+Initializing with config:
+{'SEED': 0, 'TRAIN': {'batch_size': 4, 'epochs': 50, 'num_workers': 0, 'input_track_size': 9, 'output_track_size': 12, 'lr': 0.0001, 'lr_decay': 1, 'lr_drop': True, 'aux_weight': 0.2, 'val_frequency': 5, 'optimizer': 'adam', 'max_grad_norm': 1.0}, 'DATA': {'train_datasets': ['jta_3dp']}, 'MODEL': {'seq_len': 219, 'token_num': 23, 'num_layers_local': 6, 'num_layers_global': 3, 'num_heads': 4, 'dim_hidden': 128, 'dim_feedforward': 1024, 'type': 'transmotion', 'eval_single': False, 'checkpoint': '', 'output_scale': 1, 'backbone_ckpt': './finetune/jta_3dp_stgcn/checkpoints/encoder_final.pth'}, 'OUTPUT': {'log_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune2', 'ckpt_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune2/checkpoints', 'runs_dir': '/home/arashima/social-transmotion/experiments/jta_3dp_finetune2/tensorboard'}, 'dry_run': False, 'wandb_project': 'social-transmotion', 'wandb_entity': None, 'DEVICE': 'cuda:0'}
+wandb: Currently logged in as: taishu-arashima-anzu (taishu-arashima-anzu-chiba) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in /home/arashima/social-transmotion/wandb/run-20251108_055811-1x5bopgo
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jta_3dp_finetune2
+wandb: ⭐️ View project at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion
+wandb: 🚀 View run at https://wandb.ai/taishu-arashima-anzu-chiba/social-transmotion/runs/1x5bopgo
+Loading dataset jta_3dp
+train
+data/jta_3dp/train
+Training on a total of 88719 annotations.
+Loading dataset jta_3dp
+val
+data/jta_3dp/val
+Creating TransMotion3DP model.
+[backbone] loaded 42 tensors (missing=0, unexpected=0)
+[backbone] fc_in_3dpose & stgcn are FROZEN (incl. BN eval).
+Model has 3060034 parameters.
+Epoch 0: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.9527740436784016
+Best ADE: 1.952774
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  1537.2295246124268
+epoch  0  finished!
+Epoch 0 finished! Training time: 1537.23 seconds
+Epoch 1: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.7495550904133543
+Best ADE: 1.749555
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  1535.4626841545105
+epoch  1  finished!
+Epoch 1 finished! Training time: 1535.46 seconds
+Epoch 2: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.679986679761975
+Best ADE: 1.679987
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  1539.3356325626373
+epoch  2  finished!
+Epoch 2 finished! Training time: 1539.34 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5721848629045954
+Best ADE: 1.572185
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  1535.9135463237762
+epoch  3  finished!
+Epoch 3 finished! Training time: 1535.91 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+time for training:  1535.6909890174866
+epoch  4  finished!
+Epoch 4 finished! Training time: 1535.69 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+time for training:  1533.469392299652
+epoch  5  finished!
+Epoch 5 finished! Training time: 1533.47 seconds
+Epoch 6: Learning rate adjusted to 0.000100
+time for training:  1533.7090463638306
+epoch  6  finished!
+Epoch 6 finished! Training time: 1533.71 seconds
+Epoch 7: Learning rate adjusted to 0.000100
+time for training:  1534.1781833171844
+epoch  7  finished!
+Epoch 7 finished! Training time: 1534.18 seconds
+Epoch 8: Learning rate adjusted to 0.000100
+time for training:  1535.261950492859
+epoch  8  finished!
+Epoch 8 finished! Training time: 1535.26 seconds
+Epoch 9: Learning rate adjusted to 0.000100
+time for training:  1520.218133687973
+epoch  9  finished!
+Epoch 9 finished! Training time: 1520.22 seconds
+Epoch 10: Learning rate adjusted to 0.000100
+time for training:  1519.906986951828
+epoch  10  finished!
+Epoch 10 finished! Training time: 1519.91 seconds
+Epoch 11: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.5588658735855765
+Best ADE: 1.558866
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  1531.2374918460846
+epoch  11  finished!
+Epoch 11 finished! Training time: 1531.24 seconds
+Epoch 12: Learning rate adjusted to 0.000100
+time for training:  1527.8800790309906
+epoch  12  finished!
+Epoch 12 finished! Training time: 1527.88 seconds
+Epoch 13: Learning rate adjusted to 0.000100
+time for training:  1525.1274831295013
+epoch  13  finished!
+Epoch 13 finished! Training time: 1525.13 seconds
+Epoch 14: Learning rate adjusted to 0.000100
+time for training:  1524.5463094711304
+epoch  14  finished!
+Epoch 14 finished! Training time: 1524.55 seconds
+Epoch 15: Learning rate adjusted to 0.000100
+time for training:  1526.0930888652802
+epoch  15  finished!
+Epoch 15 finished! Training time: 1526.09 seconds
+Epoch 16: Learning rate adjusted to 0.000100
+time for training:  1521.869704246521
+epoch  16  finished!
+Epoch 16 finished! Training time: 1521.87 seconds
+Epoch 17: Learning rate adjusted to 0.000100
+time for training:  1535.0252921581268
+epoch  17  finished!
+Epoch 17 finished! Training time: 1535.03 seconds
+Epoch 18: Learning rate adjusted to 0.000100
+time for training:  1534.1397016048431
+epoch  18  finished!
+Epoch 18 finished! Training time: 1534.14 seconds
+Epoch 19: Learning rate adjusted to 0.000100

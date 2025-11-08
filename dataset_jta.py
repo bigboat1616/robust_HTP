@@ -136,6 +136,7 @@ class Jta3dpDataset(MultiPersonTrajPoseDataset):
         super(Jta3dpDataset, self).__init__("jta_3dp", frequency=1, **args)
 
     def load_data(self):
+        print(self.split)
         self.data = load_data_jta_3dp(split=self.split)
         self.datalist = []
         for scene in self.data:

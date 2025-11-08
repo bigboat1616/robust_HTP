@@ -199,7 +199,7 @@ class Reader_jta_all_visual_cues(object):
         frame_to_index = {frame: i for i, frame in enumerate(frames)}
 
 
-        input_token_num = 47 # change here to modify different inputs of modalities
+        input_token_num =23 # change here to modify different inputs of modalities
 
         xy = np.full((len(frames), len(pedestrians), 4*input_token_num), np.nan)
 
@@ -329,7 +329,7 @@ class Reader_jta_3dp(object):
         frame_to_index = {frame: i for i, frame in enumerate(frames)}
 
 
-        input_token_num = 47 # change here to modify different inputs of modalities
+        input_token_num = 23 # change here to modify different inputs of modalities
 
         xy = np.full((len(frames), len(pedestrians), 4*input_token_num), np.nan)
 
