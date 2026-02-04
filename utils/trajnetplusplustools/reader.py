@@ -37,16 +37,19 @@ class Reader_jrdb_2dbox(object):
                                    scene.get('fps'), scene.get('tag'))
                     self.scenes_by_id[row.scene] = row
     def scenes(self, randomize=False, limit=0, ids=None, sample=None):
-        scene_ids = self.scenes_by_id.keys()
+        scene_ids = list(self.scenes_by_id.keys())
         if ids is not None:
             scene_ids = ids
         if randomize:
-            scene_ids = list(scene_ids)
             random.shuffle(scene_ids)
         if limit:
             scene_ids = itertools.islice(scene_ids, limit)
         if sample is not None:
-            scene_ids = random.sample(scene_ids, int(len(scene_ids) * sample))
+            sample_count = int(len(scene_ids) * sample)
+            if sample < 1.0:
+                scene_ids = random.sample(scene_ids, sample_count)
+            else:
+                scene_ids = scene_ids[:sample_count]
         for scene_id in scene_ids:
             yield self.scene(scene_id)
     @staticmethod
@@ -171,7 +174,11 @@ class Reader_jta_all_visual_cues(object):
         if limit:
             scene_ids = itertools.islice(scene_ids, limit)
         if sample is not None:
-            scene_ids = random.sample(scene_ids, int(len(scene_ids) * sample))
+            sample_count = int(len(scene_ids) * sample)
+            if sample < 1.0:
+                scene_ids = random.sample(scene_ids, sample_count)
+            else:
+                scene_ids = scene_ids[:sample_count]
         for scene_id in scene_ids:
             yield self.scene(scene_id)
     @staticmethod
@@ -292,16 +299,19 @@ class Reader_jta_3dp(object):
                                    scene.get('fps'), scene.get('tag'))
                     self.scenes_by_id[row.scene] = row
     def scenes(self, randomize=False, limit=0, ids=None, sample=None):
-        scene_ids = self.scenes_by_id.keys()
+        scene_ids = list(self.scenes_by_id.keys())
         if ids is not None:
             scene_ids = ids
         if randomize:
-            scene_ids = list(scene_ids)
             random.shuffle(scene_ids)
         if limit:
             scene_ids = itertools.islice(scene_ids, limit)
         if sample is not None:
-            scene_ids = random.sample(scene_ids, int(len(scene_ids) * sample))
+            sample_count = int(len(scene_ids) * sample)
+            if sample < 1.0:
+                scene_ids = random.sample(scene_ids, sample_count)
+            else:
+                scene_ids = scene_ids[:sample_count]
         for scene_id in scene_ids:
             yield self.scene(scene_id)
     @staticmethod

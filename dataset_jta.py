@@ -24,13 +24,9 @@ def batch_process_coords(coords, masks, padding_mask, config, modality_selection
     joints = coords.to(config["DEVICE"])
     masks = masks.to(config["DEVICE"])
     in_F = config["TRAIN"]["input_track_size"]
-   
-    in_joints_pelvis = joints[:,:, (in_F-1):in_F, 0:1, :].clone()
-    in_joints_pelvis_last = joints[:,:, (in_F-2):(in_F-1), 0:1, :].clone()
 
-    joints[:,:,:,0] = joints[:,:,:,0] - joints[:,0:1, (in_F-1):in_F, 0]
-
-    joints[:,:,:,1:] = joints[:,:,:,1:] - joints[:,:,(in_F-1):in_F,1:]
+    joints[:,:,:,0] = joints[:,:,:,0] - joints[:,0:1, (in_F-1):in_F, 0]    
+    # joints[:,:,:,1:] = joints[:,:,:,1:] - joints[:,:,(in_F-1):in_F,1:]
     B, N, F, J, K = joints.shape 
 
     if not training:
@@ -54,8 +50,6 @@ def batch_process_coords(coords, masks, padding_mask, config, modality_selection
             exit()
 
     joints = joints.transpose(1, 2).reshape(B, F, N*J, K)
-    in_joints_pelvis = in_joints_pelvis.reshape(B, 1, N, K)
-    in_joints_pelvis_last = in_joints_pelvis_last.reshape(B, 1, N, K)
     masks = masks.transpose(1, 2).reshape(B, F, N*J)
 
     in_F, out_F = config["TRAIN"]["input_track_size"], config["TRAIN"]["output_track_size"]   

@@ -6,7 +6,7 @@ from progress.bar import Bar
 from torch.utils.data import DataLoader
 
 from dataset_jta import batch_process_coords, create_dataset, collate_batch
-from model_jta_3dp_stgcn import create_model
+from model_jta_3dp_finetune_coord2 import create_model
 from utils.utils import create_logger
 
 def inference(model, config, input_joints, padding_mask, out_len=14):

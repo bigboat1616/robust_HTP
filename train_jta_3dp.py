@@ -1,20 +1,29 @@
+import os
+os.environ["PYTHONHASHSEED"] = "0"
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+
 import argparse
 from datetime import datetime
 import numpy as np
-import os
 import random
 import time
 import torch
 import wandb
 
 from progress.bar import Bar
-from torch.utils.data import DataLoader, ConcatDataset
+from torch.utils.data import DataLoader, ConcatDataset, Subset
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset_jta import collate_batch, batch_process_coords, get_datasets, create_dataset
-from model_jta_3dp_finetune import create_model
+from model_jta_3dp_finetune_coord2 import create_model
 from utils.utils import create_logger, load_default_config, load_config, AverageMeter
 from utils.metrics import MSE_LOSS
+
+
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 def evaluate_loss(model, dataloader, config):
     bar = Bar(f"EVAL", fill="#", max=len(dataloader))
@@ -86,21 +95,34 @@ def save_checkpoint(model, optimizer, epoch, config, filename, logger):
     torch.save(ckpt, os.path.join(config['OUTPUT']['ckpt_dir'], filename))
 
     
-def dataloader_for(dataset, config, **kwargs):
+def dataloader_for(dataset, config, generator=None, worker_init_fn=seed_worker, pin_memory=True, shuffle=True, **kwargs):
+    if worker_init_fn is None:
+        worker_init_fn = seed_worker
     return DataLoader(dataset,
                       batch_size=config['TRAIN']['batch_size'],
                       num_workers=config['TRAIN']['num_workers'],
                       collate_fn=collate_batch,
+                      generator=generator,
+                      worker_init_fn=worker_init_fn,
+                      pin_memory=pin_memory,
+                      shuffle=shuffle,
                       **kwargs)
 
-def dataloader_for_val(dataset, config, **kwargs):
+def dataloader_for_val(dataset, config, generator=None, worker_init_fn=None, pin_memory=True, shuffle=False, **kwargs):
+    if worker_init_fn is None:
+        worker_init_fn = seed_worker
     return DataLoader(dataset,
                       batch_size=1,
                       num_workers=0,
                       collate_fn=collate_batch,
+                      generator=generator,
+                      worker_init_fn=worker_init_fn,
+                      pin_memory=pin_memory,
+                      shuffle=shuffle,
                       **kwargs)
+            
 
-def train(config, logger, experiment_name="", dataset_name=""):
+def train(config, logger, experiment_name="", dataset_name="", dataloader_generator=None):
 
     ################################
     # Initialize wandb
@@ -122,11 +144,25 @@ def train(config, logger, experiment_name="", dataset_name=""):
 
     in_F, out_F = config['TRAIN']['input_track_size'], config['TRAIN']['output_track_size']
     dataset_train = ConcatDataset(get_datasets(config['DATA']['train_datasets'], config, logger))
-    dataloader_train = dataloader_for(dataset_train, config, shuffle=True, pin_memory=True)
+    train_fraction = config['DATA'].get('train_fraction', 1.0)
+    if train_fraction < 1.0:
+        total_len = len(dataset_train)
+        keep = max(1, int(total_len * train_fraction))
+        indices = torch.randperm(total_len, generator=dataloader_generator)[:keep]
+        dataset_train = Subset(dataset_train, indices.tolist())
+        logger.info(f"Subsampling training data: using {keep} / {total_len} annotations (~{train_fraction*100:.1f}%).")
+    dataloader_train = dataloader_for(dataset_train, config, generator=dataloader_generator)
     logger.info(f"Training on a total of {len(dataset_train)} annotations.")
 
     dataset_val = create_dataset(config['DATA']['train_datasets'][0], logger, split="val", track_size=(in_F+out_F), track_cutoff=in_F)
-    dataloader_val = dataloader_for(dataset_val, config, shuffle=True, pin_memory=True)
+    val_fraction = config['DATA'].get('val_fraction', 1.0)
+    if val_fraction < 1.0:
+        total_len = len(dataset_val)
+        keep = max(1, int(total_len * val_fraction))
+        indices = torch.randperm(total_len, generator=dataloader_generator)[:keep]
+        dataset_val = Subset(dataset_val, indices.tolist())
+        logger.info(f"Subsampling validation data: using {keep} / {total_len} annotations (~{val_fraction*100:.1f}%).")
+    dataloader_val = dataloader_for(dataset_val, config, generator=dataloader_generator)
 
 
     writer_name = experiment_name + "_" + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
@@ -212,10 +248,6 @@ def train(config, logger, experiment_name="", dataset_name=""):
                 
             timer["BACKWARD"] = time.time() - start
 
-            ################################
-            # Logging 
-            ################################
-
             loss_avg.update(loss.item(), len(joints))
             
             summary = [
@@ -244,13 +276,16 @@ def train(config, logger, experiment_name="", dataset_name=""):
         global_step += train_steps
 
         writer_train.add_scalar("loss", loss_avg.avg, epoch)
-     
+
+        # train_eval_loss = evaluate_loss(model, dataloader_train, config)
+        # writer_train.add_scalar("train_eval_loss", train_eval_loss, epoch)
         val_loss = evaluate_loss(model, dataloader_val, config)
         writer_valid.add_scalar("loss", val_loss, epoch)
 
         # Log to wandb
         wandb.log({
             "train_loss": loss_avg.avg,
+            # "train_eval_loss": train_eval_loss,
             "val_loss": val_loss,
             "epoch": epoch,
             "learning_rate": optimizer.param_groups[0]['lr'],
@@ -292,21 +327,40 @@ if __name__ == "__main__":
     parser.add_argument('--dry-run', action='store_true', help="Run just one iteration")
     parser.add_argument("--wandb_project", type=str, default="social-transmotion", help="Wandb project name")
     parser.add_argument("--wandb_entity", type=str, default=None, help="Wandb entity/username")
+    parser.add_argument("--backbone_ckpt", type=str, default=None,
+                    help="Override MODEL.backbone_ckpt in config")
+    parser.add_argument("--seed", type=int, default=0,
+                    help="Override SEED in config")
     args = parser.parse_args()
 
     if args.cfg != "":
         cfg = load_config(args.cfg, exp_name=args.exp_name)
     else:
         cfg = load_default_config()
+    
+    # ---- overrides from args ----
+    if args.backbone_ckpt is not None:
+        cfg["MODEL"]["backbone_ckpt"] = args.backbone_ckpt
+
+    if args.seed is not None:
+        cfg["SEED"] = args.seed
 
     cfg['dry_run'] = args.dry_run
     cfg['wandb_project'] = args.wandb_project
     cfg['wandb_entity'] = args.wandb_entity
 
-    random.seed(cfg['SEED'])
-    torch.manual_seed(cfg['SEED'])
-    np.random.seed(cfg['SEED'])
 
+    random.seed(cfg['SEED'])
+    np.random.seed(cfg['SEED'])
+    torch.manual_seed(cfg['SEED'])
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(cfg['SEED'])
+    dataloader_generator = torch.Generator().manual_seed(cfg['SEED'])
+
+    torch.backends.cudnn.benchmark = False       # True: faster, False: more stable
+    torch.backends.cudnn.deterministic = True  # True: more stable, False: faster
+    torch.use_deterministic_algorithms(True) # True: more stable, False: faster
+    
     if torch.cuda.is_available():
         cfg["DEVICE"] = f"cuda:{torch.cuda.current_device()}"
     else:
@@ -318,7 +372,7 @@ if __name__ == "__main__":
     logger.info("Initializing with config:")
     logger.info(cfg)
 
-    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset)
+    train(cfg, logger, experiment_name=args.exp_name, dataset_name=dataset, dataloader_generator=dataloader_generator)
 
 
 

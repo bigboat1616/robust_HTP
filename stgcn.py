@@ -66,7 +66,6 @@ class ST_GCN_18(nn.Module):
                          **kwargs0),
             st_gcn_block(feature_dim, feature_dim, kernel_size, 1, **kwargs),
             st_gcn_block(feature_dim, feature_dim, kernel_size, 1, **kwargs),
-            st_gcn_block(feature_dim, feature_dim, kernel_size, 1, **kwargs),
         ))
 
         # initialize parameters for edge importance weighting
@@ -80,36 +79,20 @@ class ST_GCN_18(nn.Module):
 
         # fcn for prediction
         self.bn = nn.BatchNorm1d(feature_dim)
-            # # Additional convolution for transforming features to 3D
-            # self.conv_3d = nn.Conv2d(in_channels=256, out_channels=3, kernel_size=1)
 
-            # # Additional layer for velocity prediction
-
+            
 
     def forward(self, x):
         # Input: [batch_size, seq_len, num_joints, 3] -> [batch_size, 3, seq_len, num_joints, 1]
-        if len(x.shape) == 4:  # [batch_size, seq_len, num_joints, 3]
-            N, C, T, V = x.size()
-            x = x.permute(0, 2, 3, 1).contiguous()  # [N, V, C, T]
-            x = x.view(N, V*C, T)
-            x = x.to(torch.float32)
-            x = self.data_bn(x)
-            x = x.view(N, V, C, T)
-            x = x.permute(0, 2, 3, 1).contiguous()
-            x = x.view(N, C, T, V)
-        else:  # Already in [N, C, T, V, M] format
-            N, C, T, V, M = x.size()
+        N, C, T, V = x.size()
         
-            # data normalization
-            x = x.permute(0, 4, 3, 1, 2).contiguous()
-            x = x.view(N * M, V * C, T)
-            x = x.to(torch.float32)
-            x = self.data_bn(x)
-            x = x.view(N, M, V, C, T)
-            x = x.permute(0, 1, 3, 4, 2).contiguous()
-            x = x.view(N * M, C, T, V)
-
-
+        # data normalization
+        x = x.permute(0, 3, 1, 2).contiguous()
+        x = x.view(N, V*C, T)
+        x = x.to(torch.float32)
+        x = self.data_bn(x)
+        x = x.view(N, V, C, T)
+        x = x.permute(0, 2, 3, 1).contiguous()
 
         # forward
         for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
@@ -117,38 +100,6 @@ class ST_GCN_18(nn.Module):
     
         return x
 
-    def extract_feature(self, x):
-        # Input: [batch_size, seq_len, num_joints, 3] -> [batch_size, 3, seq_len, num_joints, 1]
-        if len(x.shape) == 4:  # [batch_size, seq_len, num_joints, 3]
-            N, C, T, V = x.size()
-            x = x.permute(0, 3, 1, 2).contiguous()  # [N, V, C, T]
-            x = x.view(N, V*C, T)
-            x = x.to(torch.float32)
-            x = self.data_bn(x)
-            x = x.view(N, V, C, T)  
-            x = x.permute(0, 2, 3, 1).contiguous()
-            x = x.view(N, C, T, V)
-        else:  # Already in [N, C, T, V, M] format
-            N, C, T, V, M = x.size()
-
-            # data normalization
-            x = x.permute(0, 4, 3, 1, 2).contiguous()
-            x = x.view(N * M, V * C, T)
-            x = x.to(torch.float32)
-            x = self.data_bn(x)
-            x = x.view(N, M, V, C, T)
-            x = x.permute(0, 1, 3, 4, 2).contiguous()
-            x = x.view(N * M, C, T, V)
-
-        # forward
-        for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
-            x, _ = gcn(x, self.A * importance)
-
-        # 特徴抽出のみ
-        _, c, t, v = x.size()
-        feature = x.view(N, c, t, v)
-        
-        return feature, feature  # エンコーダーとして使用するため、特徴のみ返す
 
 
 class st_gcn_block(nn.Module):
