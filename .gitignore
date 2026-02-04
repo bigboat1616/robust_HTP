@@ -75,3 +75,4 @@ plots/*
 plots_50_0/*
 future_traj/*
 *.out
+nohup.out
