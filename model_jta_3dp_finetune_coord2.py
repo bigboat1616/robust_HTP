@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 import numpy as np
-import argparse
-from datetime import datetime
 from stgcn import ST_GCN_18
 
 
@@ -193,12 +190,12 @@ class TransMotion3DP(nn.Module):
         return pose_attn_22
 
     def forward(self, tgt, padding_mask, metamask=None, get_attn=False):
+        tgt = tgt.to(self.device)
         B, in_F, NJ, K = tgt.shape 
         F = self.obs_and_pred 
         J = self.token_num
         out_F = F - in_F
         N = NJ // J
-        
         # パディングの処理
         i_idx = torch.cat([torch.arange(in_F), torch.full((out_F,), in_F-1)]).to(tgt.device)
         tgt = tgt[:,i_idx]        
@@ -206,10 +203,10 @@ class TransMotion3DP(nn.Module):
     
 
         # 軌跡データの処理
-        tgt_traj = tgt[:,:,:,0,:2].to(self.device) 
+        tgt_traj = tgt[:,:,:,0,:2] 
 
         # 3D姿勢データの処理
-        tgt_3dpose = tgt[:,:,:,1:,:3].to(self.device)  
+        tgt_3dpose = tgt[:,:,:,1:,:3]  
 
         # tgt_3dpose = tgt_3dpose - tgt_3dpose[:,(in_F-1):in_F,:,:,:]
 
@@ -218,15 +215,18 @@ class TransMotion3DP(nn.Module):
         tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
 
         BN = B * N
+        print("3dpose_row mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         tgt_3dpose = tgt_3dpose[:,:9]  # (B, 9, N, 22, 3)
         tgt_3dpose = tgt_3dpose.permute(0, 2, 4, 1, 3).contiguous() 
-        tgt_3dpose = tgt_3dpose.view(BN, 3, 9, 22) 
+        tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22) 
         # ST-GCNを通す
         tgt_3dpose = self.stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)
+        tgt_3dpose = tgt_3dpose   
+        print("stgcn mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         # 既存のフローに合わせてreshape: (B, 198, N, nhid)へ変換
-        tgt_3dpose = tgt_3dpose.view(B,N,self.nhid,9, 22)
+        tgt_3dpose = tgt_3dpose.reshape(B, N, self.nhid, 9, 22)
         tgt_3dpose = tgt_3dpose.permute(0, 3, 4, 1, 2).contiguous()  # (B, 198, N, nhid)
-        tgt_3dpose = tgt_3dpose.view(B, 9*22, N, self.nhid)
+        tgt_3dpose = tgt_3dpose.reshape(B, 9 * 22, N, self.nhid)
         tgt_3dpose = self.pose3d_encoder(tgt_3dpose)
 
         # パディングマスクの処理
@@ -236,7 +236,10 @@ class TransMotion3DP(nn.Module):
         # データの整形
         tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
         tgt_3dpose = torch.transpose(tgt_3dpose, 0,1).reshape(in_F*self.joints_pose, -1, self.nhid) 
-
+        #アブレーションのための3dposeゼロ埋め
+        # tgt_3dpose = torch.zeros(in_F*self.joints_pose, B*N , self.nhid).to(self.device)
+        # print("traj mean/std:", tgt_traj.mean().item(), tgt_traj.std().item())
+        # print("3dpose mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         # 結合
         tgt = torch.cat((tgt_traj, tgt_3dpose), 0) 
         # Transformer処理
@@ -244,6 +247,7 @@ class TransMotion3DP(nn.Module):
             out_local, attn_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local, get_attn=True)
         else:
             out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
+        # print("out_local mean/std:", out_local.mean().item(), out_local.std().item())
         out_local = out_local * self.output_scale + tgt
 
         out_local = out_local[:21].reshape(21,B,N,self.nhid).permute(2,0,1,3).reshape(-1,B,self.nhid)
@@ -297,20 +301,37 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
       - 'encoder.*'           → model.stgcn.*
     を読み込んで、両モジュールを凍結（勾配停止＋BNをeval固定）する。
     """
+    # Snapshot current ST-GCN weights for diff
+    before = {k: v.detach().cpu().clone() for k, v in model.stgcn.state_dict().items()}
+
     ckpt = torch.load(ckpt_path, map_location=device)
-    sd = ckpt.get('encoder_state_dict', ckpt.get('state_dict', ckpt))
+    # Resolve checkpoint payload to a state_dict-like mapping
+    if isinstance(ckpt, dict):
+        sd = ckpt.get('encoder_state_dict',
+             ckpt.get('model_state_dict',
+             ckpt.get('state_dict', ckpt)))
+    else:
+        sd = ckpt
 
     # DataParallel対策: 'module.' を剥がす
     def strip_module(k): 
         return k[7:] if k.startswith('module.') else k
 
     remapped = {}
+    if not isinstance(sd, dict):
+        raise ValueError(f"Unsupported checkpoint format: {type(sd)}")
     for k, v in sd.items():
         k = strip_module(k)
-        if k.startswith('encoder.'):
+        if k.startswith('stgcn.'):
+            remapped[k] = v
+            print(f"loaded {k} (direct)")
+        elif k.startswith('encoder.'):
             new_k = 'stgcn.' + k[len('encoder.'):]
             remapped[new_k] = v
             print(f"loaded {k} -> {new_k}")
+        elif k.startswith('coord_to_feature.'):
+            # ignore non-stgcn weights
+            continue
 
 
     # 既存 state_dict に上書き（形状が一致するキーのみ）
@@ -319,6 +340,17 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
     cur.update(matched)
     missing, unexpected = model.load_state_dict(cur, strict=False)
 
+    if len(matched) == 0:
+        print("[backbone] WARNING: no stgcn weights matched. Check checkpoint keys.")
+    else:
+        # Report max diff after load
+        after = {k: v.detach().cpu() for k, v in model.stgcn.state_dict().items()}
+        diffs = []
+        for k in matched.keys():
+            if k in after and k in before:
+                diffs.append((after[k] - before[k]).abs().max().item())
+        if diffs:
+            print(f"[backbone] max |Δ| in stgcn after load: {max(diffs):.6f}")
     print(f"[backbone] loaded {len(matched)} tensors "
           f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
           f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")

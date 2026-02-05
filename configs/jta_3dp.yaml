@@ -29,4 +29,4 @@ MODEL:
     eval_single: false
     checkpoint: "" ##checkpoint.pth.tar
     output_scale: 1 
-    backbone_ckpt: "./finetune/jta_3dp_stgcn/checkpoints/encoder_coord_final_30.pth"
+    backbone_ckpt: "./finetune/jta_3dp_stgcn/checkpoints/cleaning.pth"

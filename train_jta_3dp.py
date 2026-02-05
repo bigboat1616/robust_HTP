@@ -174,6 +174,7 @@ def train(config, logger, experiment_name="", dataset_name="", dataloader_genera
     ################################
 
     model = create_model(config, logger)
+    print("stgcn frozen:", all(not p.requires_grad for p in model.stgcn.parameters()))
 
     if config["MODEL"]["checkpoint"] != "":
         logger.info(f"Loading checkpoint from {config['MODEL']['checkpoint']}")

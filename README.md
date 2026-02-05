@@ -1,53 +1,50 @@
 <div align="center">
-<h1> Robust_Social-Transmotion </h1>
+<h1>Robust Human Trajectory Prediction via Self-Supervised Skeleton Representation Learning</h1>
 <h3>Taishu Arashima*, Hiroshi Kera*, Kazuhiko Kawamoto</h3>
-
 </div>
 
-<div align="center"> <h3> Abstract </h3>  </div>
-<div align="justify">
+This repository provides code for our trajectory prediction framework that pretrains a skeleton encoder with masked joint reconstruction and then fine-tunes a trajectory predictor with robust skeletal representations. See the paper: [Robust Human Trajectory Prediction via Self-Supervised Skeleton Representation Learning](file://_arXiv_.pdf).
 
+<div align="center">
+<img src="docs/figure1.pdf" alt="Overview" width="90%">
+</div>
 
-# Getting Started
+# Setup
 
-Install the requirements using `pip`:
+Install the requirements:
 ```
 pip install -r requirements.txt
 ```
 
-We have conveniently added the preprocessed data to the release section of the repository (for license details, please refer to the original papers).
-Place the data subdirectory of JTA under `data/jta_all_visual_cues` and the data subdirectory of JRDB under `data/jrdb_2dbox` of the repository.
+# Data
 
-# Training and Testing
+Place JTA-3DP data under `data/jta_3dp` (train/val/test subfolders). For other datasets, adjust paths in the YAML configs.
 
-## JTA dataset
-You can train the Social-Transmotion model on this dataset using the following command:
-```
-python train_jta.py --cfg configs/jta_all_visual_cues.yaml --exp_name jta
-```
+# Stage 1: Skeleton Pretraining (Self-Supervised)
 
+Pretrain the skeleton encoder:
+```
+python skeleton_mae/main_skeleton_coord.py --cfg skeleton_mae/configs_skeleton.yml
+```
+Checkpoints are saved under the YAML-defined `TRAIN.save_dir`, with:
+- `model_final.pth` (final epoch)
+- `best_model_final.pth` (best validation loss during training)
 
-To evaluate the trained model, use the following command:
-```
-python evaluate_jta.py --ckpt ./experiments/jta/checkpoints/checkpoint.pth.tar --metric ade_fde --modality traj+all
-```
-Please note that the evaluation modality can be any of `[traj, traj+2dbox, traj+3dpose, traj+2dpose, traj+3dpose+3dbox, traj+all]`.
-For the ease of use, we have also provided the trained model in the release section of this repo. In order to use that, you should pass the address of the saved checkpoint via `--ckpt`.
+# Stage 2: Trajectory Fine-Tuning
 
-## JRDB dataset
-You can train the Social-Transmotion model on this dataset using the following command:
+Use the pretrained encoder checkpoint via `MODEL.backbone_ckpt` in `configs/jta_3dp.yaml`, then train:
 ```
-python train_jrdb.py --cfg configs/jrdb_2dbox.yaml --exp_name jrdb
+python train_jta_3dp.py --cfg configs/jta_3dp.yaml
 ```
 
-To evaluate the trained model, use the following command:
+# Evaluation
+
+Evaluate the trajectory predictor:
 ```
-python evaluate_jrdb.py --ckpt ./experiments/jrdb/checkpoints/checkpoint.pth.tar --metric ade_fde --modality traj+2dbox
+python evaluate_jta_3dp.py --ckpt <checkpoint> --metric ade_fde --modality traj+3dpose
 ```
-Please note that the evaluation modality can be one any of `[traj, traj+2dbox]`.
-For the ease of use, we have also provided the trained model in the release section of this repo. In order to use that, you should pass the address of the saved checkpoint via `--ckpt`.
 
-# Work in Progress
+# Notes
 
-This repository is work-in-progress and will continue to get updated and improved over the coming months.
-
+- Skeleton encoder weights are loaded and frozen in `model_jta_3dp_finetune_coord2.py`.
+- If you change checkpoint naming or directories, update `TRAIN.save_dir` in `skeleton_mae/configs_skeleton.yml` and `MODEL.backbone_ckpt` in `configs/jta_3dp.yaml`.
