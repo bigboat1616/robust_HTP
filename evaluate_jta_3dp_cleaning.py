@@ -5,29 +5,19 @@ import numpy as np
 from progress.bar import Bar
 from torch.utils.data import DataLoader
 
-from dataset_jrdb import batch_process_coords, create_dataset, collate_batch
-from model_jrdb import create_model
+from dataset_jta import batch_process_coords, create_dataset, collate_batch
+from model_jta_3dp_cleaning_2 import (
+    create_model,
+    load_reconstruction_weights,
+    load_model_weights_excluding_recon,
+)
 from utils.utils import create_logger
 
 def inference(model, config, input_joints, padding_mask, out_len=14):
     model.eval()
     
     with torch.no_grad():
-        # === 1. FFT適用（スケール調整） ===
-        in_joints_freq = torch.fft.fft(input_joints, dim=3)
-
-        # === 2. 実数表現（2チャンネル化）===
-        in_joints_real = torch.view_as_real(in_joints_freq).to(torch.float32)
-
-        # === 3. モデルの予測（周波数空間で処理） ===
-        pred_joints_real = model(in_joints_real, padding_mask.to(dtype=torch.bool))
-
-        # === 4. 出力を複素数表現に戻す ===
-        pred_joints_freq = torch.view_as_complex(pred_joints_real)
-
-        # === 5. IFFT適用（時間領域に戻す） ===
-        pred_joints = torch.fft.ifft(pred_joints_freq, dim=3).real
-
+        pred_joints = model(input_joints, padding_mask)
 
     output_joints = pred_joints[:,-out_len:]
 
@@ -45,6 +35,7 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
     ade_batch = 0 
     fde_batch = 0
     for i, batch in enumerate(dataloader):
+        bar.next()
         joints, masks, padding_mask = batch
         padding_mask = padding_mask.to(config["DEVICE"])
    
@@ -79,6 +70,7 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
 
             fde_batch += scene_fde
         batch_id+=1
+    bar.finish()
 
     ade = ade_batch/((batch_id-1)*batch_size+len(out_joints))
     fde = fde_batch/((batch_id-1)*batch_size+len(out_joints))
@@ -87,10 +79,11 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ckpt", type=str,  help="checkpoint path")
+    parser.add_argument("--ckpt", type=str, help="checkpoint path for main model weights")
+    parser.add_argument("--recon_ckpt", type=str, help="checkpoint path for stgcn/decoder weights")
     parser.add_argument("--split", type=str, default="test", help="Split to use. one of [train, test, valid]")
     parser.add_argument("--metric", type=str, default="vim", help="Evaluation metric. One of (vim, mpjpe)")
-    parser.add_argument("--modality", type=str, default="traj+2dbox", help="available modality combination from['traj','traj+2dbox']")
+    parser.add_argument("--modality", type=str, default="traj+all", help="available modality combination from['traj','traj+3dpose','traj+all']")
 
     args = parser.parse_args()
 
@@ -122,7 +115,9 @@ if __name__ == "__main__":
     ################################
 
     model = create_model(config, logger)
-    model.load_state_dict(ckpt['model']) 
+    if args.recon_ckpt:
+        load_reconstruction_weights(model, args.recon_ckpt, device=config["DEVICE"])
+    load_model_weights_excluding_recon(model, args.ckpt, device=config["DEVICE"])
     ################################
     # Load data
     ################################
@@ -132,7 +127,6 @@ if __name__ == "__main__":
     assert out_F == 12
 
     name = config['DATA']['train_datasets']
-    
     dataset = create_dataset(name[0], logger, split=args.split, track_size=(in_F+out_F), track_cutoff=in_F)
 
     

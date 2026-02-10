@@ -7,7 +7,7 @@
 set -euo pipefail
 
 GPU_ID="${1:-6}"
-CKPT="experiments/jta_3dp_robust/checkpoints/best_val_checkpoint.pth.tar"
+CKPT="experiments/jta_3dp_not_normalization_not_finetune/checkpoints/checkpoint.pth.tar"
 
 for joints in $(seq 1 21); do
   if [[ "${joints}" -eq 1 ]]; then
@@ -17,9 +17,9 @@ for joints in $(seq 1 21); do
   fi
 
 if [[ "${joints}" -eq 1 ]]; then
-  split="test_occlusion_robust/random_${joints}joint_0/"
+  split="test_occlusion/random_${joints}joint_0/"
 else
-  split="test_occlusion_robust/random_${joints}joints_0/"
+  split="test_occlusion/random_${joints}joints_0/"
 fi
 
   echo "=== Evaluating split: ${split} ==="

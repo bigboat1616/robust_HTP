@@ -151,9 +151,15 @@ class TransMotion3DP(nn.Module):
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
 
 
-        # ST-GCNレイヤー
+        # 再構成モデル
         graph_cfg = {'layout': 'jta_3dp_row', 'strategy': 'distance', 'max_hop': 1, 'dilation': 1}
         self.stgcn = ST_GCN_18(in_channels=3, feature_dim=nhid, graph_cfg=graph_cfg, edge_importance_weighting=True, data_bn=True, layer_num=3)
+
+        self.coord_decoder = nn.Sequential(
+            nn.Linear(nhid, nhid),
+            nn.ReLU(),
+            nn.Linear(nhid, 3),
+        )
 
         # Transformerレイヤー
         encoder_layer_local = TransformerEncoderLayerWithAttn(d_model=nhid,
@@ -233,16 +239,25 @@ class TransMotion3DP(nn.Module):
         BN = B * N
         # print("3dpose_row mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         tgt_3dpose = tgt_3dpose[:,:9]  # (B, 9, N, 22, 3)
-        tgt_3dpose = tgt_3dpose.permute(0, 2, 4, 1, 3).contiguous() 
-        tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22) 
+        pose_input_9 = tgt_3dpose
+        tgt_3dpose = tgt_3dpose.permute(0, 2, 4, 1, 3).contiguous()
+        tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22)
         # ST-GCNを通す
         tgt_3dpose = self.stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)
-
+        tgt_3dpose = tgt_3dpose.permute(0, 2, 3, 1)  # (B*N, 9, 22, nhid)
+        tgt_3dpose = self.coord_decoder(tgt_3dpose.reshape(-1, self.nhid))  # (B*N*9*22, 3)
+        tgt_3dpose = tgt_3dpose.view(B, N, 9, 22, 3)
+        recon_pose_9 = tgt_3dpose.permute(0, 2, 1, 3, 4).contiguous()  # (B, 9, N, 22, 3)
+        # 3D座標が完全に0の関節のみ再構成で置き換え（関節15は除外）
+        zero_mask = (pose_input_9 == 0).all(dim=-1)  # (B, 9, N, 22)
+        allowed_joints_mask = torch.ones((1, 1, 1, self.joints_pose), device=self.device, dtype=torch.bool)
+        allowed_joints_mask[..., 15] = False
+        replace_mask = zero_mask & allowed_joints_mask
+        pose_input_9 = torch.where(replace_mask.unsqueeze(-1), recon_pose_9, pose_input_9)
         # print("stgcn mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         # 既存のフローに合わせてreshape: (B, 198, N, nhid)へ変換
-        tgt_3dpose = tgt_3dpose.reshape(B, N, self.nhid, 9, 22)
-        tgt_3dpose = tgt_3dpose.permute(0, 3, 4, 1, 2).contiguous()  # (B, 198, N, nhid)
-        tgt_3dpose = tgt_3dpose.reshape(B, 9 * 22, N, self.nhid)
+        tgt_3dpose = pose_input_9.permute(0, 1, 3, 2, 4).contiguous().reshape(B, 9 * 22, N, 3)
+        tgt_3dpose = self.fc_in_3dpose(tgt_3dpose)
         tgt_3dpose = self.pose3d_encoder(tgt_3dpose)
 
         # パディングマスクの処理
@@ -305,11 +320,76 @@ def create_model(config, logger):
         device=config["DEVICE"]
     ).to(config["DEVICE"]).float()
 
-    # 事前学習バックボーンを読み込んで凍結
-    ckpt_path = config["MODEL"].get("backbone_ckpt")
-    if ckpt_path:
-        load_and_freeze_backbone_for_transmotion(model, ckpt_path, device=config["DEVICE"])
     return model 
+
+
+def _resolve_state_dict(ckpt):
+    if isinstance(ckpt, dict):
+        return ckpt.get("model", ckpt.get("encoder_state_dict",
+               ckpt.get("model_state_dict", ckpt.get("state_dict", ckpt))))
+    return ckpt
+
+
+def _strip_module_prefix(k):
+    return k[7:] if k.startswith("module.") else k
+
+
+def load_reconstruction_weights(model: TransMotion3DP, ckpt_path: str, device="cpu"):
+    """
+    再構成モデル(stgcn + coord_decoder)だけを読み込む。
+    encoder.* -> stgcn.* も許容。
+    """
+    ckpt = torch.load(ckpt_path, map_location=device)
+    sd = _resolve_state_dict(ckpt)
+    if not isinstance(sd, dict):
+        raise ValueError(f"Unsupported checkpoint format: {type(sd)}")
+
+    remapped = {}
+    for k, v in sd.items():
+        k = _strip_module_prefix(k)
+        if k.startswith("encoder."):
+            k = "stgcn." + k[len("encoder."):]
+        remapped[k] = v
+
+    cur = model.state_dict()
+    matched = {
+        k: v for k, v in remapped.items()
+        if (k.startswith("stgcn.") or k.startswith("coord_decoder."))
+        and k in cur and cur[k].shape == v.shape
+    }
+    cur.update(matched)
+    missing, unexpected = model.load_state_dict(cur, strict=False)
+    print(f"[recon] loaded {len(matched)} tensors "
+          f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
+          f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
+
+
+def load_model_weights_excluding_recon(model: TransMotion3DP, ckpt_path: str, device="cpu"):
+    """
+    再構成モデル以外(それ以外)の重みを読み込む。
+    stgcn / coord_decoder は上書きしない。
+    """
+    ckpt = torch.load(ckpt_path, map_location=device)
+    sd = _resolve_state_dict(ckpt)
+    if not isinstance(sd, dict):
+        raise ValueError(f"Unsupported checkpoint format: {type(sd)}")
+
+    remapped = {}
+    for k, v in sd.items():
+        k = _strip_module_prefix(k)
+        remapped[k] = v
+
+    cur = model.state_dict()
+    matched = {
+        k: v for k, v in remapped.items()
+        if not (k.startswith("stgcn.") or k.startswith("coord_decoder."))
+        and k in cur and cur[k].shape == v.shape
+    }
+    cur.update(matched)
+    missing, unexpected = model.load_state_dict(cur, strict=False)
+    print(f"[model] loaded {len(matched)} tensors "
+          f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
+          f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
 
 def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: str, device='cpu'):
     """
@@ -379,7 +459,6 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
           f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
 
     # ---- ST-GCNは凍結（BNも含めて固定） ----
-    model.stgcn.eval()
     for p in model.stgcn.parameters():
         p.requires_grad = False
 

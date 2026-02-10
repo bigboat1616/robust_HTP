@@ -5,8 +5,9 @@
 # GPU_ID defaults to 4 if not provided.
 
 set -euo pipefail
-GPU_ID="${1:-7}"
-CKPT="experiments/jta_3dp_not_normalization_2/checkpoints/best_val_checkpoint.pth.tar"
+GPU_ID="${1:-5}"
+CKPT="experiments/jta_3dp_not_normalization_not_finetune/checkpoints/checkpoint.pth.tar"
+RECON_CKPT="./skeleton_mae/ckpt/0.5_mask0/checkpoints/best_model_final.pth"
 
 for joints in $(seq 1 21); do
   if [[ "${joints}" -eq 1 ]]; then
@@ -16,15 +17,15 @@ for joints in $(seq 1 21); do
   fi
 
 if [[ "${joints}" -eq 1 ]]; then
-  split="test_occlusion/random_${joints}joint_mask/"
+  split="test_occlusion/random_${joints}joint_0"
 else
-  split="test_occlusion/random_${joints}joints_mask/"
+  split="test_occlusion/random_${joints}joints_0/"
 fi
 
   echo "=== Evaluating split: ${split} ==="
   CUDA_VISIBLE_DEVICES="${GPU_ID}" python evaluate_jta_3dp_cleaning.py \
     --ckpt "${CKPT}" \
-    --cleaning_ckpt ./finetune/jta_3dp_stgcn/checkpoints/cleaning.pth\
+    --recon_ckpt "${RECON_CKPT}"\
     --split "${split}"
 done
 

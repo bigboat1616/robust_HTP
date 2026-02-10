@@ -29,4 +29,6 @@ MODEL:
     eval_single: false
     checkpoint: "" ##checkpoint.pth.tar
     output_scale: 1 
-    backbone_ckpt: "./finetune/jta_3dp_stgcn/checkpoints/cleaning.pth"
+    # backbone_ckpt: "./finetune/jta_3dp_stgcn/checkpoints/best_stgcn.pth"
+    backbone_ckpt: "./skeleton_mae/ckpt/0.5_mask0/checkpoints/best_model_final.pth"
+

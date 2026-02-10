@@ -31,6 +31,7 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
     ade_batch = 0 
     fde_batch = 0
     for i, batch in enumerate(dataloader):
+        bar.next()
         joints, masks, padding_mask = batch
         padding_mask = padding_mask.to(config["DEVICE"])
    
@@ -65,6 +66,7 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
 
             fde_batch += scene_fde
         batch_id+=1
+    bar.finish()
 
     ade = ade_batch/((batch_id-1)*batch_size+len(out_joints))
     fde = fde_batch/((batch_id-1)*batch_size+len(out_joints))

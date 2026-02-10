@@ -120,6 +120,7 @@ class TransMotion3DP(nn.Module):
         self.global_former = AuxilliaryEncoderST(encoder_layer_global, num_layers=nlayers_global)
 
     def forward(self, tgt, padding_mask, metamask=None):
+        tgt = tgt.to(self.device)
         B, in_F, NJ, K = tgt.shape 
         F = self.obs_and_pred 
         J = self.token_num
@@ -137,17 +138,18 @@ class TransMotion3DP(nn.Module):
         mask_ratio = 0.0
 
         # 軌跡データの処理
-        tgt_traj = tgt[:,:,:,0,:2].to(self.device) 
+        tgt_traj = tgt[:,:,:,0,:2]
         traj_mask = torch.rand((B,F,N)).float().to(self.device) > mask_ratio_traj
         traj_mask = traj_mask.unsqueeze(3).repeat_interleave(2,dim=-1)
         tgt_traj = tgt_traj*traj_mask
 
         # 3D姿勢データの処理
-        print("3dpose_row mean/std:", tgt[:,:,:,1:,:3].mean().item(), tgt[:,:,:,1:,:3].std().item())
-        tgt_3dpose = tgt[:,:,:,1:,:3].to(self.device)  # 3D姿勢データは2番目のトークンから
-        joints_3d_mask = torch.rand((B,F,N,self.joints_pose)).float().to(self.device) > mask_ratio
-        joints_3d_mask = joints_3d_mask.unsqueeze(4).repeat_interleave(3,dim=-1)
-        tgt_3dpose = tgt_3dpose*joints_3d_mask
+        tgt_3dpose = tgt[:,:,:,1:,:3]  
+        joints_3d_mask = torch.rand((B, F, N, self.joints_pose), device=self.device) < mask_ratio
+        joints_3d_mask[..., 15] = False
+        mask_token = torch.tensor([0.0, 0.0, 0.0], device=self.device, dtype=tgt_3dpose.dtype)
+        tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
+
 
         # エンコーディング
         tgt_traj = self.fc_in_traj(tgt_traj) 
@@ -166,14 +168,16 @@ class TransMotion3DP(nn.Module):
         tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
         tgt_3dpose = torch.transpose(tgt_3dpose, 0,1).reshape(in_F*self.joints_pose, -1, self.nhid) 
 
-        print("traj mean/std:", tgt_traj.mean().item(), tgt_traj.std().item())
-        print("3dpose mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
+        # アブレーションのための3dposeゼロ埋め
+        tgt_3dpose = torch.zeros(in_F*self.joints_pose, B*N , self.nhid).to(self.device)
+        # print("traj mean/std:", tgt_traj.mean().item(), tgt_traj.std().item())
+        # print("3dpose mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         # 結合
         tgt = torch.cat((tgt_traj, tgt_3dpose), 0) 
 
         # Transformer処理
         out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
-        print("out_local mean/std:", out_local.mean().item(), out_local.std().item())
+        # print("out_local mean/std:", out_local.mean().item(), out_local.std().item())
         out_local = out_local * self.output_scale + tgt
 
         out_local = out_local[:21].reshape(21,B,N,self.nhid).permute(2,0,1,3).reshape(-1,B,self.nhid)
