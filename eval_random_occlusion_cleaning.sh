@@ -1,31 +1,30 @@
 #!/usr/bin/env bash
 
-# Simple helper script to run evaluate_jta_3dp.py across random occlusion splits.
-# Usage: ./eval_random_occlusion.sh [GPU_ID]
-# GPU_ID defaults to 4 if not provided.
-
 set -euo pipefail
-GPU_ID="${1:-5}"
-CKPT="experiments/jta_3dp_not_normalization_not_finetune/checkpoints/checkpoint.pth.tar"
-RECON_CKPT="./skeleton_mae/ckpt/0.5_mask0/checkpoints/best_model_final.pth"
 
-for joints in $(seq 1 21); do
-  if [[ "${joints}" -eq 1 ]]; then
-    joint_label="joint"
-  else
-    joint_label="joints"
-  fi
+GPU_ID="${1:-7}"
+CKPT="experiments/jta_3dp_not_normalization_finetune_final_sampling_mask0_true/checkpoints/checkpoint.pth.tar"
+RECON_CKPT="skeleton_mae/ckpt/0.5_mask0/checkpoints/best_model_final.pth"
 
-if [[ "${joints}" -eq 1 ]]; then
-  split="test_occlusion/random_${joints}joint_0"
-else
-  split="test_occlusion/random_${joints}joints_0/"
-fi
+# mask joints を0から21まで1刻みで実行（関節15は内部で除外）
+# for mask_joints in $(seq 0 1 21); do
+#
+#   echo "=== Evaluating mask joints: ${mask_joints} ==="
+#   CUDA_VISIBLE_DEVICES="${GPU_ID}" python evaluate_jta_3dp_cleaning.py \
+#     --ckpt "${CKPT}" \
+#     --recon_ckpt "${RECON_CKPT}" \
+#     --mask_joints "${mask_joints}"
+#
+# done
 
-  echo "=== Evaluating split: ${split} ==="
+# mask rateを0から1まで0.1刻みで実行
+for mask_rate in $(seq 0.0 0.1 1.0); do
+
+  echo "=== Evaluating mask rate: ${mask_rate} ==="
   CUDA_VISIBLE_DEVICES="${GPU_ID}" python evaluate_jta_3dp_cleaning.py \
     --ckpt "${CKPT}" \
-    --recon_ckpt "${RECON_CKPT}"\
-    --split "${split}"
+    --recon_ckpt "${RECON_CKPT}" \
+    --mask_rate "${mask_rate}"
+
 done
 

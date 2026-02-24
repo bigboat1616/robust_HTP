@@ -84,7 +84,7 @@ class Learnedpose3dEncoding(nn.Module):
         return self.dropout(x)
 
 class TransMotion3DP(nn.Module):
-    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, device='cuda:0'):
+    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, mask_ratio=0.0, mask_joints=None, device='cuda:0'):
         super(TransMotion3DP, self).__init__()
         self.seq_len = tok_dim
         self.nhid = nhid
@@ -93,6 +93,8 @@ class TransMotion3DP(nn.Module):
         self.joints_pose = 22
         self.obs_and_pred = 21
         self.device = device
+        self.mask_ratio = mask_ratio
+        self.mask_joints = mask_joints
         
         # 軌跡用のレイヤー
         self.fc_in_traj = nn.Linear(2, nhid)
@@ -135,7 +137,7 @@ class TransMotion3DP(nn.Module):
     
         # マスクの設定
         mask_ratio_traj = 0.0
-        mask_ratio = 0.0
+        mask_ratio = self.mask_ratio
 
         # 軌跡データの処理
         tgt_traj = tgt[:,:,:,0,:2]
@@ -145,8 +147,21 @@ class TransMotion3DP(nn.Module):
 
         # 3D姿勢データの処理
         tgt_3dpose = tgt[:,:,:,1:,:3]  
-        joints_3d_mask = torch.rand((B, F, N, self.joints_pose), device=self.device) < mask_ratio
-        joints_3d_mask[..., 15] = False
+        allowed_joints = torch.tensor(
+            [j for j in range(self.joints_pose) if j != 15],
+            device=self.device,
+        )
+        if self.mask_joints is None:
+            num_mask = int(round(mask_ratio * allowed_joints.numel()))
+        else:
+            num_mask = int(self.mask_joints)
+        num_mask = max(0, min(num_mask, allowed_joints.numel()))
+        joints_3d_mask = torch.zeros((B, F, N, self.joints_pose), device=self.device, dtype=torch.bool)
+        if num_mask > 0:
+            scores = torch.rand((B, F, N, allowed_joints.numel()), device=self.device)
+            _, idx = scores.topk(num_mask, dim=-1)
+            selected = allowed_joints[idx]
+            joints_3d_mask.scatter_(dim=-1, index=selected, value=True)
         mask_token = torch.tensor([0.0, 0.0, 0.0], device=self.device, dtype=tgt_3dpose.dtype)
         tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
 
@@ -169,7 +184,7 @@ class TransMotion3DP(nn.Module):
         tgt_3dpose = torch.transpose(tgt_3dpose, 0,1).reshape(in_F*self.joints_pose, -1, self.nhid) 
 
         # アブレーションのための3dposeゼロ埋め
-        tgt_3dpose = torch.zeros(in_F*self.joints_pose, B*N , self.nhid).to(self.device)
+        # tgt_3dpose = torch.zeros(in_F*self.joints_pose, B*N , self.nhid).to(self.device)
         # print("traj mean/std:", tgt_traj.mean().item(), tgt_traj.std().item())
         # print("3dpose mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         # 結合
@@ -199,6 +214,8 @@ def create_model(config, logger):
     nlayers_local = config["MODEL"]["num_layers_local"]
     nlayers_global = config["MODEL"]["num_layers_global"]
     dim_feedforward = config["MODEL"]["dim_feedforward"]
+    mask_ratio = config["MODEL"].get("mask_rate", 0.0)
+    mask_joints = config["MODEL"].get("mask_joints", None)
 
     logger.info("Creating TransMotion3DP model.")
     model = TransMotion3DP(tok_dim=seq_len,
@@ -210,6 +227,8 @@ def create_model(config, logger):
         output_scale=config["MODEL"]["output_scale"],
         obs_and_pred=config["TRAIN"]["input_track_size"] + config["TRAIN"]["output_track_size"],
         num_tokens=token_num,
+        mask_ratio=mask_ratio,
+        mask_joints=mask_joints,
         device=config["DEVICE"]
     ).to(config["DEVICE"]).float()
 

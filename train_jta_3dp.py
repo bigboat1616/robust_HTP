@@ -174,7 +174,6 @@ def train(config, logger, experiment_name="", dataset_name="", dataloader_genera
     ################################
 
     model = create_model(config, logger)
-    print("stgcn frozen:", all(not p.requires_grad for p in model.stgcn.parameters()))
 
     if config["MODEL"]["checkpoint"] != "":
         logger.info(f"Loading checkpoint from {config['MODEL']['checkpoint']}")
@@ -330,6 +329,7 @@ if __name__ == "__main__":
     parser.add_argument("--wandb_entity", type=str, default=None, help="Wandb entity/username")
     parser.add_argument("--backbone_ckpt", type=str, default=None,
                     help="Override MODEL.backbone_ckpt in config")
+    parser.add_argument("--mask_rate", type=float, default=None, help="Override MODEL.mask_rate in config")
     parser.add_argument("--seed", type=int, default=0,
                     help="Override SEED in config")
     args = parser.parse_args()
@@ -345,6 +345,10 @@ if __name__ == "__main__":
 
     if args.seed is not None:
         cfg["SEED"] = args.seed
+
+    if args.mask_rate is not None:
+        cfg.setdefault("MODEL", {})
+        cfg["MODEL"]["mask_rate"] = args.mask_rate
 
     cfg['dry_run'] = args.dry_run
     cfg['wandb_project'] = args.wandb_project

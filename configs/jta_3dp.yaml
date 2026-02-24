@@ -25,6 +25,7 @@ MODEL:
     num_heads: 4
     dim_hidden: 128 
     dim_feedforward: 1024 
+    mask_rate: 0.0
     type: "transmotion"
     eval_single: false
     checkpoint: "" ##checkpoint.pth.tar

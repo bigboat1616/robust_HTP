@@ -129,7 +129,7 @@ class Learnedpose3dEncoding(nn.Module):
         return self.dropout(x)
 
 class TransMotion3DP(nn.Module):
-    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, device='cuda:0'):
+    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, mask_ratio=0.0, mask_joints=None, device='cuda:0'):
         super(TransMotion3DP, self).__init__()
         self.seq_len = tok_dim
         self.nhid = nhid
@@ -138,6 +138,8 @@ class TransMotion3DP(nn.Module):
         self.joints_pose = 22
         self.obs_and_pred = 21
         self.device = device
+        self.mask_ratio = mask_ratio
+        self.mask_joints = mask_joints
         
         # 軌跡用のレイヤー
         self.fc_in_traj = nn.Linear(2, nhid)
@@ -201,7 +203,8 @@ class TransMotion3DP(nn.Module):
         tgt = tgt[:,i_idx]        
         tgt = tgt.reshape(B,F,N,J,K)
 
-        mask_ratio = 0.0
+        # マスクの設定
+        mask_ratio = self.mask_ratio
 
         # 軌跡データの処理
         tgt_traj = tgt[:,:,:,0,:2] 
@@ -213,7 +216,10 @@ class TransMotion3DP(nn.Module):
             [j for j in range(self.joints_pose) if j != 15],
             device=self.device,
         )
-        num_mask = int(round(mask_ratio * allowed_joints.numel()))
+        if self.mask_joints is None:
+            num_mask = int(round(mask_ratio * allowed_joints.numel()))
+        else:
+            num_mask = int(self.mask_joints)
         num_mask = max(0, min(num_mask, allowed_joints.numel()))
         joints_3d_mask = torch.zeros((B, F, N, self.joints_pose), device=self.device, dtype=torch.bool)
         if num_mask > 0:
@@ -223,8 +229,6 @@ class TransMotion3DP(nn.Module):
             joints_3d_mask.scatter_(dim=-1, index=selected, value=True)
         mask_token = torch.tensor([0.0, 0.0, 0.0], device=self.device, dtype=tgt_3dpose.dtype)
         tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
-
-        # tgt_3dpose = tgt_3dpose - tgt_3dpose[:,(in_F-1):in_F,:,:,:]
 
         # エンコーディング
         tgt_traj = self.fc_in_traj(tgt_traj) 
@@ -293,6 +297,8 @@ def create_model(config, logger):
     dim_feedforward = config["MODEL"]["dim_feedforward"]
 
     logger.info("Creating TransMotion3DP model.")
+    mask_ratio = config["MODEL"].get("mask_rate", 0.0)
+    mask_joints = config["MODEL"].get("mask_joints", None)
     model = TransMotion3DP(tok_dim=seq_len,
         nhid=nhid,
         nhead=nhead,
@@ -302,13 +308,21 @@ def create_model(config, logger):
         output_scale=config["MODEL"]["output_scale"],
         obs_and_pred=config["TRAIN"]["input_track_size"] + config["TRAIN"]["output_track_size"],
         num_tokens=token_num,
+        mask_ratio=mask_ratio,
+        mask_joints=mask_joints,
         device=config["DEVICE"]
     ).to(config["DEVICE"]).float()
 
-    # 事前学習バックボーンを読み込んで凍結
+    # 訓練時のみ事前学習バックボーンを読み込んで凍結．
     ckpt_path = config["MODEL"].get("backbone_ckpt")
-    if ckpt_path:
+    if model.training and ckpt_path:
         load_and_freeze_backbone_for_transmotion(model, ckpt_path, device=config["DEVICE"])
+    elif ckpt_path:
+        pass
+        # print("[backbone] skipped loading because model is not in train() mode.")
+    else:
+        pass
+        # print("[backbone] no backbone_ckpt provided; skipping load.")
     return model 
 
 def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: str, device='cpu'):
@@ -342,11 +356,11 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
         #     continue
         if k.startswith('stgcn.'):
             remapped[k] = v
-            print(f"loaded {k} (direct)")
+            # print(f"loaded {k} (direct)")
         elif k.startswith('encoder.'):
             new_k = 'stgcn.' + k[len('encoder.'):]
             remapped[new_k] = v
-            print(f"loaded {k} -> {new_k}")
+            # print(f"loaded {k} -> {new_k}")
         elif k.startswith('coord_to_feature.'):
             # ignore non-stgcn weights
             continue
@@ -359,7 +373,8 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
     missing, unexpected = model.load_state_dict(cur, strict=False)
 
     if len(matched) == 0:
-        print("[backbone] WARNING: no stgcn weights matched. Check checkpoint keys.")
+        pass
+        # print("[backbone] WARNING: no stgcn weights matched. Check checkpoint keys.")
     else:
         # Report max diff after load
         after = {k: v.detach().cpu() for k, v in model.stgcn.state_dict().items()}
@@ -369,14 +384,16 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
             if k_sub in after and k_sub in before:
                 diffs.append((after[k_sub] - before[k_sub]).abs().max().item())
         if diffs:
-            print(f"[backbone] max |Δ| in stgcn after load: {max(diffs):.6f}")
+            pass
+            # print(f"[backbone] max |Δ| in stgcn after load: {max(diffs):.6f}")
         else:
-            sample_keys = list(matched.keys())[:5]
-            print("[backbone] WARNING: diff check skipped (no overlapping keys).")
-            print(f"[backbone] matched sample keys: {sample_keys}")
-    print(f"[backbone] loaded {len(matched)} tensors "
-          f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
-          f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
+            pass
+            # sample_keys = list(matched.keys())[:5]
+            # print("[backbone] WARNING: diff check skipped (no overlapping keys).")
+            # print(f"[backbone] matched sample keys: {sample_keys}")
+    # print(f"[backbone] loaded {len(matched)} tensors "
+    #       f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
+    #       f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
 
     # ---- ST-GCNは凍結（BNも含めて固定） ----
     model.stgcn.eval()
@@ -386,11 +403,10 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
     for m in model.stgcn.modules():
         if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
             m.eval()
-            # m.track_running_stats = True
-            m.track_running_stats = False
+            m.track_running_stats = True
             if m.affine:
                 m.weight.requires_grad = False
                 m.bias.requires_grad = False
 
-    print("[backbone] stgcn frozen (including BN).")
+    # print("[backbone] stgcn frozen (including BN).")
 

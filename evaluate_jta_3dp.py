@@ -1,4 +1,6 @@
 import argparse
+import time
+import json
 import torch
 import random
 import numpy as np
@@ -6,7 +8,7 @@ from progress.bar import Bar
 from torch.utils.data import DataLoader
 
 from dataset_jta import batch_process_coords, create_dataset, collate_batch
-from model_jta_3dp_finetune_coord2 import create_model
+from model_jta_3dp import create_model
 from utils.utils import create_logger
 
 def inference(model, config, input_joints, padding_mask, out_len=14):
@@ -20,7 +22,7 @@ def inference(model, config, input_joints, padding_mask, out_len=14):
     return output_joints
 
 
-def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, return_all=False, bar_prefix="", per_joint=False, show_avg=False):
+def evaluate_ade_fde(model, dataloader, bs, config, logger, return_all=False, bar_prefix="", per_joint=False, show_avg=False, save_predictions=False):
     in_F, out_F = config['TRAIN']['input_track_size'], config['TRAIN']['output_track_size']
     bar = Bar(f"EVAL ADE_FDE", fill="#", max=len(dataloader))
 
@@ -30,12 +32,13 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
     fde = 0
     ade_batch = 0 
     fde_batch = 0
+    all_predictions = [] if save_predictions else None
     for i, batch in enumerate(dataloader):
         bar.next()
         joints, masks, padding_mask = batch
         padding_mask = padding_mask.to(config["DEVICE"])
    
-        in_joints, in_masks, out_joints, out_masks, padding_mask = batch_process_coords(joints, masks, padding_mask, config, modality_selection)
+        in_joints, in_masks, out_joints, out_masks, padding_mask = batch_process_coords(joints, masks, padding_mask, config)
         pred_joints = inference(model, config, in_joints, padding_mask, out_len=out_F)
 
         out_joints = out_joints.cpu() 
@@ -49,6 +52,12 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
 
             gt_xy = person_out_joints[:,0,:2]
             pred_xy = person_pred_joints[:,0,:2]
+            
+            # 予測結果を保存
+            if save_predictions:
+                pred_list = [[float(pred_xy[t, 0].item()), float(pred_xy[t, 1].item())] for t in range(12)]
+                all_predictions.append(pred_list)
+            
             sum_ade = 0
                 
             for t in range(12):
@@ -70,7 +79,13 @@ def evaluate_ade_fde(model, modality_selection, dataloader, bs, config, logger, 
 
     ade = ade_batch/((batch_id-1)*batch_size+len(out_joints))
     fde = fde_batch/((batch_id-1)*batch_size+len(out_joints))
-    return ade, fde
+    return ade, fde, (batch_id - 1) * batch_size + len(out_joints), batch_id, all_predictions
+
+
+def count_parameters(model):
+    total = sum(p.numel() for p in model.parameters())
+    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return total, trainable
 
 if __name__ == "__main__":
     
@@ -78,8 +93,11 @@ if __name__ == "__main__":
     parser.add_argument("--ckpt", type=str,  help="checkpoint path")
     parser.add_argument("--split", type=str, default="test", help="Split to use. one of [train, test, valid]")
     parser.add_argument("--metric", type=str, default="vim", help="Evaluation metric. One of (vim, mpjpe)")
-    parser.add_argument("--modality", type=str, default="traj+all", help="available modality combination from['traj','traj+3dpose','traj+all']")
 
+    parser.add_argument("--mask_joints", type=int, default=None, help="Override MODEL.mask_joints during evaluation")
+    parser.add_argument("--mask_rate", type=float, default=None, help="Override MODEL.mask_rate during evaluation")
+    parser.add_argument("--output", type=str, default=None, help="Path to save predictions as JSON")
+    
     args = parser.parse_args()
 
     random.seed(0)
@@ -94,6 +112,12 @@ if __name__ == "__main__":
     logger.info(f'Loading checkpoint from {args.ckpt}') 
     ckpt = torch.load(args.ckpt, map_location = torch.device('cpu'))
     config = ckpt['config']
+    if args.mask_rate is not None:
+        config.setdefault("MODEL", {})
+        config["MODEL"]["mask_rate"] = args.mask_rate
+    if args.mask_joints is not None:
+        config.setdefault("MODEL", {})
+        config["MODEL"]["mask_joints"] = args.mask_joints
     
     if torch.cuda.is_available():
         config["DEVICE"] = f"cuda:{torch.cuda.current_device()}"
@@ -110,7 +134,8 @@ if __name__ == "__main__":
     ################################
 
     model = create_model(config, logger)
-    model.load_state_dict(ckpt['model']) 
+    model.load_state_dict(ckpt['model'])
+    total_params, trainable_params = count_parameters(model)
     ################################
     # Load data
     ################################
@@ -126,10 +151,27 @@ if __name__ == "__main__":
  
     bs = config['TRAIN']['batch_size']
     dataloader = DataLoader(dataset, batch_size=bs, num_workers=config['TRAIN']['num_workers'], shuffle=False, collate_fn=collate_batch)
-    ade,fde = evaluate_ade_fde(model, args.modality, dataloader, bs, config, logger, return_all=True)
+    start_time = time.perf_counter()
+    ade, fde, sample_num, batch_id, all_predictions = evaluate_ade_fde(
+        model, dataloader, bs, config, logger, return_all=True, save_predictions=(args.output is not None)
+    )
+    elapsed_sec = time.perf_counter() - start_time
+    per_batch_sec = elapsed_sec / batch_id if batch_id > 0 else 0.0
+    per_sample_sec = elapsed_sec / sample_num if sample_num > 0 else 0.0
 
 
     print('ADE: ', ade)
     print('FDE: ', fde)
+    print('Eval time (s): ', elapsed_sec)
+    print('Time per batch (s): ', per_batch_sec)
+    print('Time per sample (s): ', per_sample_sec)
+    print('Params (total): ', total_params)
+    print('Params (trainable): ', trainable_params)
+    
+    # 予測結果をJSONで保存
+    if args.output is not None and all_predictions is not None:
+        with open(args.output, 'w') as f:
+            json.dump(all_predictions, f)
+        print(f'Predictions saved to: {args.output}')
     
 

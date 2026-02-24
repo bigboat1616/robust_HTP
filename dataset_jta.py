@@ -20,7 +20,7 @@ def collate_batch(batch):
     return joints, masks, padding_mask
 
 
-def batch_process_coords(coords, masks, padding_mask, config, modality_selection='traj+all', training=False, multiperson=True):
+def batch_process_coords(coords, masks, padding_mask, config, training=False, multiperson=True):
     joints = coords.to(config["DEVICE"])
     masks = masks.to(config["DEVICE"])
     in_F = config["TRAIN"]["input_track_size"]
@@ -28,26 +28,6 @@ def batch_process_coords(coords, masks, padding_mask, config, modality_selection
     joints[:,:,:,0] = joints[:,:,:,0] - joints[:,0:1, (in_F-1):in_F, 0]    
     # joints[:,:,:,1:] = joints[:,:,:,1:] - joints[:,:,(in_F-1):in_F,1:]
     B, N, F, J, K = joints.shape 
-
-    if not training:
-        if modality_selection == 'traj+all':
-            pass
-        elif modality_selection=='traj':
-            joints[:,:,:,1:]=0
-        elif modality_selection=='traj+2dbox':
-            joints[:,:,:,1]=0
-            joints[:,:,:,3:]=0
-        elif modality_selection == 'traj+3dpose':
-            joints[:,:,:,1:3]=0
-            joints[:,:,:,25:]=0
-        elif modality_selection == 'traj+2dpose':
-            joints[:,:,:,1:25]=0
-        elif modality_selection == 'traj+3dpose+3dbox':
-            joints[:,:,:,2]=0
-            joints[:,:,:,25:]=0
-        else:
-            print('modality error')
-            exit()
 
     joints = joints.transpose(1, 2).reshape(B, F, N*J, K)
     masks = masks.transpose(1, 2).reshape(B, F, N*J)

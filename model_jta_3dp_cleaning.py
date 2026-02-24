@@ -129,7 +129,7 @@ class Learnedpose3dEncoding(nn.Module):
         return self.dropout(x)
 
 class TransMotion3DP(nn.Module):
-    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, device='cuda:0'):
+    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, mask_ratio=0.0, mask_joints=None, device='cuda:0'):
         super(TransMotion3DP, self).__init__()
         self.seq_len = tok_dim
         self.nhid = nhid
@@ -138,6 +138,8 @@ class TransMotion3DP(nn.Module):
         self.joints_pose = 22
         self.obs_and_pred = 21
         self.device = device
+        self.mask_ratio = mask_ratio
+        self.mask_joints = mask_joints
         
         # 軌跡用のレイヤー
         self.fc_in_traj = nn.Linear(2, nhid)
@@ -153,9 +155,9 @@ class TransMotion3DP(nn.Module):
 
         # 再構成モデル
         graph_cfg = {'layout': 'jta_3dp_row', 'strategy': 'distance', 'max_hop': 1, 'dilation': 1}
-        self.stgcn = ST_GCN_18(in_channels=3, feature_dim=nhid, graph_cfg=graph_cfg, edge_importance_weighting=True, data_bn=True, layer_num=3)
+        self.recon_stgcn = ST_GCN_18(in_channels=3, feature_dim=nhid, graph_cfg=graph_cfg, edge_importance_weighting=True, data_bn=True, layer_num=3)
 
-        self.coord_decoder = nn.Sequential(
+        self.recon_coord_decoder = nn.Sequential(
             nn.Linear(nhid, nhid),
             nn.ReLU(),
             nn.Linear(nhid, 3),
@@ -207,7 +209,7 @@ class TransMotion3DP(nn.Module):
         tgt = tgt[:,i_idx]        
         tgt = tgt.reshape(B,F,N,J,K)
 
-        mask_ratio = 0.0
+        mask_ratio = self.mask_ratio
 
         # 軌跡データの処理
         tgt_traj = tgt[:,:,:,0,:2] 
@@ -219,7 +221,10 @@ class TransMotion3DP(nn.Module):
             [j for j in range(self.joints_pose) if j != 15],
             device=self.device,
         )
-        num_mask = int(round(mask_ratio * allowed_joints.numel()))
+        if self.mask_joints is None:
+            num_mask = int(round(mask_ratio * allowed_joints.numel()))
+        else:
+            num_mask = int(self.mask_joints)
         num_mask = max(0, min(num_mask, allowed_joints.numel()))
         joints_3d_mask = torch.zeros((B, F, N, self.joints_pose), device=self.device, dtype=torch.bool)
         if num_mask > 0:
@@ -230,7 +235,6 @@ class TransMotion3DP(nn.Module):
         mask_token = torch.tensor([0.0, 0.0, 0.0], device=self.device, dtype=tgt_3dpose.dtype)
         tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
 
-        # tgt_3dpose = tgt_3dpose - tgt_3dpose[:,(in_F-1):in_F,:,:,:]
 
         # エンコーディング
         tgt_traj = self.fc_in_traj(tgt_traj) 
@@ -242,18 +246,17 @@ class TransMotion3DP(nn.Module):
         pose_input_9 = tgt_3dpose
         tgt_3dpose = tgt_3dpose.permute(0, 2, 4, 1, 3).contiguous()
         tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22)
-        # ST-GCNを通す
-        tgt_3dpose = self.stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)
+
+        # 再構成
+        tgt_3dpose = self.recon_stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)
         tgt_3dpose = tgt_3dpose.permute(0, 2, 3, 1)  # (B*N, 9, 22, nhid)
-        tgt_3dpose = self.coord_decoder(tgt_3dpose.reshape(-1, self.nhid))  # (B*N*9*22, 3)
+        tgt_3dpose = self.recon_coord_decoder(tgt_3dpose.reshape(-1, self.nhid))  # (B*N*9*22, 3)
         tgt_3dpose = tgt_3dpose.view(B, N, 9, 22, 3)
         recon_pose_9 = tgt_3dpose.permute(0, 2, 1, 3, 4).contiguous()  # (B, 9, N, 22, 3)
         # 3D座標が完全に0の関節のみ再構成で置き換え（関節15は除外）
-        zero_mask = (pose_input_9 == 0).all(dim=-1)  # (B, 9, N, 22)
-        allowed_joints_mask = torch.ones((1, 1, 1, self.joints_pose), device=self.device, dtype=torch.bool)
-        allowed_joints_mask[..., 15] = False
-        replace_mask = zero_mask & allowed_joints_mask
+        replace_mask = joints_3d_mask[:,:9]
         pose_input_9 = torch.where(replace_mask.unsqueeze(-1), recon_pose_9, pose_input_9)
+
         # print("stgcn mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
         # 既存のフローに合わせてreshape: (B, 198, N, nhid)へ変換
         tgt_3dpose = pose_input_9.permute(0, 1, 3, 2, 4).contiguous().reshape(B, 9 * 22, N, 3)
@@ -308,6 +311,8 @@ def create_model(config, logger):
     dim_feedforward = config["MODEL"]["dim_feedforward"]
 
     logger.info("Creating TransMotion3DP model.")
+    mask_ratio = config["MODEL"].get("mask_rate", 1.0)
+    mask_joints = config["MODEL"].get("mask_joints", None)
     model = TransMotion3DP(tok_dim=seq_len,
         nhid=nhid,
         nhead=nhead,
@@ -317,6 +322,8 @@ def create_model(config, logger):
         output_scale=config["MODEL"]["output_scale"],
         obs_and_pred=config["TRAIN"]["input_track_size"] + config["TRAIN"]["output_track_size"],
         num_tokens=token_num,
+        mask_ratio=mask_ratio,
+        mask_joints=mask_joints,
         device=config["DEVICE"]
     ).to(config["DEVICE"]).float()
 
@@ -332,144 +339,3 @@ def _resolve_state_dict(ckpt):
 
 def _strip_module_prefix(k):
     return k[7:] if k.startswith("module.") else k
-
-
-def load_reconstruction_weights(model: TransMotion3DP, ckpt_path: str, device="cpu"):
-    """
-    再構成モデル(stgcn + coord_decoder)だけを読み込む。
-    encoder.* -> stgcn.* も許容。
-    """
-    ckpt = torch.load(ckpt_path, map_location=device)
-    sd = _resolve_state_dict(ckpt)
-    if not isinstance(sd, dict):
-        raise ValueError(f"Unsupported checkpoint format: {type(sd)}")
-
-    remapped = {}
-    for k, v in sd.items():
-        k = _strip_module_prefix(k)
-        if k.startswith("encoder."):
-            k = "stgcn." + k[len("encoder."):]
-        remapped[k] = v
-
-    cur = model.state_dict()
-    matched = {
-        k: v for k, v in remapped.items()
-        if (k.startswith("stgcn.") or k.startswith("coord_decoder."))
-        and k in cur and cur[k].shape == v.shape
-    }
-    cur.update(matched)
-    missing, unexpected = model.load_state_dict(cur, strict=False)
-    print(f"[recon] loaded {len(matched)} tensors "
-          f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
-          f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
-
-
-def load_model_weights_excluding_recon(model: TransMotion3DP, ckpt_path: str, device="cpu"):
-    """
-    再構成モデル以外(それ以外)の重みを読み込む。
-    stgcn / coord_decoder は上書きしない。
-    """
-    ckpt = torch.load(ckpt_path, map_location=device)
-    sd = _resolve_state_dict(ckpt)
-    if not isinstance(sd, dict):
-        raise ValueError(f"Unsupported checkpoint format: {type(sd)}")
-
-    remapped = {}
-    for k, v in sd.items():
-        k = _strip_module_prefix(k)
-        remapped[k] = v
-
-    cur = model.state_dict()
-    matched = {
-        k: v for k, v in remapped.items()
-        if not (k.startswith("stgcn.") or k.startswith("coord_decoder."))
-        and k in cur and cur[k].shape == v.shape
-    }
-    cur.update(matched)
-    missing, unexpected = model.load_state_dict(cur, strict=False)
-    print(f"[model] loaded {len(matched)} tensors "
-          f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
-          f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
-
-def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: str, device='cpu'):
-    """
-    ckpt の 'encoder_state_dict'（または 'state_dict'）にある
-      - 'encoder.*'           → model.stgcn.*
-    を読み込んで、両モジュールを凍結（勾配停止＋BNをeval固定）する。
-    """
-    # Snapshot current ST-GCN weights for diff
-    before = {k: v.detach().cpu().clone() for k, v in model.stgcn.state_dict().items()}
-
-    ckpt = torch.load(ckpt_path, map_location=device)
-    # Resolve checkpoint payload to a state_dict-like mapping
-    if isinstance(ckpt, dict):
-        sd = ckpt.get('encoder_state_dict',
-             ckpt.get('model_state_dict',
-             ckpt.get('state_dict', ckpt)))
-    else:
-        sd = ckpt
-
-    # DataParallel対策: 'module.' を剥がす
-    def strip_module(k): 
-        return k[7:] if k.startswith('module.') else k
-
-    remapped = {}
-    if not isinstance(sd, dict):
-        raise ValueError(f"Unsupported checkpoint format: {type(sd)}")
-    for k, v in sd.items():
-        k = strip_module(k)
-        # if k.endswith((".running_mean", ".running_var", ".num_batches_tracked")):
-        #     continue
-        if k.startswith('stgcn.'):
-            remapped[k] = v
-            print(f"loaded {k} (direct)")
-        elif k.startswith('encoder.'):
-            new_k = 'stgcn.' + k[len('encoder.'):]
-            remapped[new_k] = v
-            print(f"loaded {k} -> {new_k}")
-        elif k.startswith('coord_to_feature.'):
-            # ignore non-stgcn weights
-            continue
-
-
-    # 既存 state_dict に上書き（形状が一致するキーのみ）
-    cur = model.state_dict()
-    matched = {k: v for k, v in remapped.items() if k in cur and cur[k].shape == v.shape}
-    cur.update(matched)
-    missing, unexpected = model.load_state_dict(cur, strict=False)
-
-    if len(matched) == 0:
-        print("[backbone] WARNING: no stgcn weights matched. Check checkpoint keys.")
-    else:
-        # Report max diff after load
-        after = {k: v.detach().cpu() for k, v in model.stgcn.state_dict().items()}
-        diffs = []
-        for k in matched.keys():
-            k_sub = k[len("stgcn."):] if k.startswith("stgcn.") else k
-            if k_sub in after and k_sub in before:
-                diffs.append((after[k_sub] - before[k_sub]).abs().max().item())
-        if diffs:
-            print(f"[backbone] max |Δ| in stgcn after load: {max(diffs):.6f}")
-        else:
-            sample_keys = list(matched.keys())[:5]
-            print("[backbone] WARNING: diff check skipped (no overlapping keys).")
-            print(f"[backbone] matched sample keys: {sample_keys}")
-    print(f"[backbone] loaded {len(matched)} tensors "
-          f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
-          f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
-
-    # ---- ST-GCNは凍結（BNも含めて固定） ----
-    for p in model.stgcn.parameters():
-        p.requires_grad = False
-
-    for m in model.stgcn.modules():
-        if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-            m.eval()
-            # m.track_running_stats = True
-            m.track_running_stats = False
-            if m.affine:
-                m.weight.requires_grad = False
-                m.bias.requires_grad = False
-
-    print("[backbone] stgcn frozen (including BN).")
-
