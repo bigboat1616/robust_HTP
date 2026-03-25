@@ -6,7 +6,7 @@
 This repository provides code for our trajectory prediction framework that pretrains a skeleton encoder with masked joint reconstruction and then fine-tunes a trajectory predictor with robust skeletal representations. See the paper: [Robust Human Trajectory Prediction via Self-Supervised Skeleton Representation Learning](file://_arXiv_.pdf).
 
 <div align="center">
-<img src="docs/figure1.pdf" alt="Overview" width="90%">
+<img src="docs/figure1.png" alt="Overview" width="90%">
 </div>
 
 # Setup
