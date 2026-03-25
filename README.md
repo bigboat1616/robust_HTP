@@ -1,6 +1,6 @@
 <div align="center">
 <h1>Robust Human Trajectory Prediction via Self-Supervised Skeleton Representation Learning</h1>
-<h3>Taishu Arashima*, Hiroshi Kera*, Kazuhiko Kawamoto</h3>
+<h3>Taishu Arashima, Hiroshi Kera, Kazuhiko Kawamoto</h3>
 </div>
 
 This repository provides code for our trajectory prediction framework that pretrains a skeleton encoder with masked joint reconstruction and then fine-tunes a trajectory predictor with robust skeletal representations. See the paper: [Robust Human Trajectory Prediction via Self-Supervised Skeleton Representation Learning](file://_arXiv_.pdf).
