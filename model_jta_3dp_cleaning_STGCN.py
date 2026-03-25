@@ -129,7 +129,7 @@ class Learnedpose3dEncoding(nn.Module):
         return self.dropout(x)
 
 class TransMotion3DP(nn.Module):
-    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, mask_ratio=0.0, mask_joints=None, device='cuda:0'):
+    def __init__(self, tok_dim=21, nhid=256, nhead=4, dim_feedfwd=1024, nlayers_local=2, nlayers_global=4, dropout=0.1, activation='relu', output_scale=1, obs_and_pred=21, num_tokens=2, mask_ratio=1.0, mask_joints=None, device='cuda:0'):
         super(TransMotion3DP, self).__init__()
         self.seq_len = tok_dim
         self.nhid = nhid
@@ -141,29 +141,45 @@ class TransMotion3DP(nn.Module):
         self.mask_ratio = mask_ratio
         self.mask_joints = mask_joints
         
-        # 軌跡用のレイヤー
+        # Trajectory layers
         self.fc_in_traj = nn.Linear(2, nhid)
         self.fc_out_traj = nn.Linear(nhid, 2)
         self.double_id_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device)
         self.id_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
 
         
-        # 3D姿勢用のレイヤー
+        # 3D pose layers
         self.fc_in_3dpose = nn.Linear(3, nhid)
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
 
 
-        # 再構成モデル
+        # Reconstruction model
         graph_cfg = {'layout': 'jta_3dp_row', 'strategy': 'distance', 'max_hop': 1, 'dilation': 1}
-        self.recon_stgcn = ST_GCN_18(in_channels=3, feature_dim=nhid, graph_cfg=graph_cfg, edge_importance_weighting=True, data_bn=True, layer_num=3)
-
+        self.recon_stgcn = ST_GCN_18(
+            in_channels=3,
+            feature_dim=nhid,
+            graph_cfg=graph_cfg,
+            edge_importance_weighting=True,
+            data_bn=True,
+            layer_num=3,
+        )
         self.recon_coord_decoder = nn.Sequential(
             nn.Linear(nhid, nhid),
             nn.ReLU(),
             nn.Linear(nhid, 3),
         )
 
-        # Transformerレイヤー
+        # Encoder ST-GCN
+        self.stgcn = ST_GCN_18(
+            in_channels=3,
+            feature_dim=nhid,
+            graph_cfg=graph_cfg,
+            edge_importance_weighting=True,
+            data_bn=True,
+            layer_num=3,
+        )
+
+        # Transformer layers
         encoder_layer_local = TransformerEncoderLayerWithAttn(d_model=nhid,
                                                    nhead=nhead,
                                                    dim_feedforward=dim_feedfwd,
@@ -204,19 +220,20 @@ class TransMotion3DP(nn.Module):
         J = self.token_num
         out_F = F - in_F
         N = NJ // J
-        # パディングの処理
+        # Padding handling
         i_idx = torch.cat([torch.arange(in_F), torch.full((out_F,), in_F-1)]).to(tgt.device)
         tgt = tgt[:,i_idx]        
         tgt = tgt.reshape(B,F,N,J,K)
 
         mask_ratio = self.mask_ratio
 
-        # 軌跡データの処理
+        # Trajectory data processing
         tgt_traj = tgt[:,:,:,0,:2] 
 
-        # 3D姿勢データの処理
+
+        # 3D pose data processing
         tgt_3dpose = tgt[:,:,:,1:,:3]  
-        # ちょうどK関節をマスク (関節15は除外)
+        # Mask exactly K joints (excluding joint 15)
         allowed_joints = torch.tensor(
             [j for j in range(self.joints_pose) if j != 15],
             device=self.device,
@@ -232,11 +249,12 @@ class TransMotion3DP(nn.Module):
             _, idx = scores.topk(num_mask, dim=-1)
             selected = allowed_joints[idx]
             joints_3d_mask.scatter_(dim=-1, index=selected, value=True)
-        mask_token = torch.tensor([0.0, 0.0, 0.0], device=self.device, dtype=tgt_3dpose.dtype)
-        tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
+            mask_token = torch.tensor([0.0, 0.0, 0.0], device=self.device, dtype=tgt_3dpose.dtype)
+            tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
 
 
-        # エンコーディング
+
+        # Encoding
         tgt_traj = self.fc_in_traj(tgt_traj) 
         tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
 
@@ -247,36 +265,37 @@ class TransMotion3DP(nn.Module):
         tgt_3dpose = tgt_3dpose.permute(0, 2, 4, 1, 3).contiguous()
         tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22)
 
-        # 再構成
+        # Reconstruction
         tgt_3dpose = self.recon_stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)
         tgt_3dpose = tgt_3dpose.permute(0, 2, 3, 1)  # (B*N, 9, 22, nhid)
         tgt_3dpose = self.recon_coord_decoder(tgt_3dpose.reshape(-1, self.nhid))  # (B*N*9*22, 3)
         tgt_3dpose = tgt_3dpose.view(B, N, 9, 22, 3)
         recon_pose_9 = tgt_3dpose.permute(0, 2, 1, 3, 4).contiguous()  # (B, 9, N, 22, 3)
-        # 3D座標が完全に0の関節のみ再構成で置き換え（関節15は除外）
+        # Replace only joints with all-zero 3D coords (excluding joint 15)
         replace_mask = joints_3d_mask[:,:9]
         pose_input_9 = torch.where(replace_mask.unsqueeze(-1), recon_pose_9, pose_input_9)
-
-        # print("stgcn mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
-        # 既存のフローに合わせてreshape: (B, 198, N, nhid)へ変換
-        tgt_3dpose = pose_input_9.permute(0, 1, 3, 2, 4).contiguous().reshape(B, 9 * 22, N, 3)
-        tgt_3dpose = self.fc_in_3dpose(tgt_3dpose)
+        # Match model_jta_3dp_finetune.py flow: reshape to (B, 9, 22, N, 3)
+        tgt_3dpose = pose_input_9.permute(0, 2, 4, 1, 3).contiguous()
+        tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22) 
+        tgt_3dpose = self.stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)
+        tgt_3dpose = tgt_3dpose.reshape(B, N, self.nhid, 9, 22)
+        tgt_3dpose = tgt_3dpose.permute(0, 3, 4, 1, 2).contiguous()  # (B, 198, N, nhid)
+        tgt_3dpose = tgt_3dpose.reshape(B, 9 * 22, N, self.nhid)
         tgt_3dpose = self.pose3d_encoder(tgt_3dpose)
-
-        # パディングマスクの処理
+        # Padding mask handling
         tgt_padding_mask_global = padding_mask.repeat_interleave(F, dim=1) 
         tgt_padding_mask_local = padding_mask.reshape(-1).unsqueeze(1).repeat_interleave(self.seq_len,dim=1) 
   
-        # データの整形
+        # Reshape data
         tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
         tgt_3dpose = torch.transpose(tgt_3dpose, 0,1).reshape(in_F*self.joints_pose, -1, self.nhid) 
-        #アブレーションのための3dposeゼロ埋め
+        # Zero out 3D pose for ablation
         # tgt_3dpose = torch.zeros(in_F*self.joints_pose, B*N , self.nhid).to(self.device)
         # print("traj mean/std:", tgt_traj.mean().item(), tgt_traj.std().item())
         # print("3dpose mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
-        # 結合
+        # Concatenate
         tgt = torch.cat((tgt_traj, tgt_3dpose), 0) 
-        # Transformer処理
+        # Transformer forward
         if get_attn:
             out_local, attn_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local, get_attn=True)
         else:

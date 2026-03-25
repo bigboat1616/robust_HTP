@@ -141,23 +141,23 @@ class TransMotion3DP(nn.Module):
         self.mask_ratio = mask_ratio
         self.mask_joints = mask_joints
         
-        # 軌跡用のレイヤー
+        # Trajectory layers
         self.fc_in_traj = nn.Linear(2, nhid)
         self.fc_out_traj = nn.Linear(nhid, 2)
         self.double_id_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device)
         self.id_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
 
         
-        # 3D姿勢用のレイヤー
+        # 3D pose layers
         self.fc_in_3dpose = nn.Linear(3, nhid)
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
 
 
-        # ST-GCNレイヤー
+        # ST-GCN layers
         graph_cfg = {'layout': 'jta_3dp_row', 'strategy': 'distance', 'max_hop': 1, 'dilation': 1}
         self.stgcn = ST_GCN_18(in_channels=3, feature_dim=nhid, graph_cfg=graph_cfg, edge_importance_weighting=True, data_bn=True, layer_num=3)
 
-        # Transformerレイヤー
+        # Transformer layers
         encoder_layer_local = TransformerEncoderLayerWithAttn(d_model=nhid,
                                                    nhead=nhead,
                                                    dim_feedforward=dim_feedfwd,
@@ -198,20 +198,20 @@ class TransMotion3DP(nn.Module):
         J = self.token_num
         out_F = F - in_F
         N = NJ // J
-        # パディングの処理
+        # Padding handling
         i_idx = torch.cat([torch.arange(in_F), torch.full((out_F,), in_F-1)]).to(tgt.device)
         tgt = tgt[:,i_idx]        
         tgt = tgt.reshape(B,F,N,J,K)
 
-        # マスクの設定
+        # Mask configuration
         mask_ratio = self.mask_ratio
 
-        # 軌跡データの処理
+        # Trajectory data processing
         tgt_traj = tgt[:,:,:,0,:2] 
 
-        # 3D姿勢データの処理
+        # 3D pose data processing
         tgt_3dpose = tgt[:,:,:,1:,:3]  
-        # ちょうどK関節をマスク (関節15は除外)
+        # Mask exactly K joints (excluding joint 15)
         allowed_joints = torch.tensor(
             [j for j in range(self.joints_pose) if j != 15],
             device=self.device,
@@ -230,7 +230,7 @@ class TransMotion3DP(nn.Module):
         mask_token = torch.tensor([0.0, 0.0, 0.0], device=self.device, dtype=tgt_3dpose.dtype)
         tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
 
-        # エンコーディング
+        # Encoding
         tgt_traj = self.fc_in_traj(tgt_traj) 
         tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
 
@@ -239,30 +239,30 @@ class TransMotion3DP(nn.Module):
         tgt_3dpose = tgt_3dpose[:,:9]  # (B, 9, N, 22, 3)
         tgt_3dpose = tgt_3dpose.permute(0, 2, 4, 1, 3).contiguous() 
         tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22) 
-        # ST-GCNを通す
+        # Forward through ST-GCN
         tgt_3dpose = self.stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)
 
         # print("stgcn mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
-        # 既存のフローに合わせてreshape: (B, 198, N, nhid)へ変換
+        # Match existing flow: reshape to (B, 198, N, nhid)
         tgt_3dpose = tgt_3dpose.reshape(B, N, self.nhid, 9, 22)
         tgt_3dpose = tgt_3dpose.permute(0, 3, 4, 1, 2).contiguous()  # (B, 198, N, nhid)
         tgt_3dpose = tgt_3dpose.reshape(B, 9 * 22, N, self.nhid)
         tgt_3dpose = self.pose3d_encoder(tgt_3dpose)
 
-        # パディングマスクの処理
+        # Padding mask handling
         tgt_padding_mask_global = padding_mask.repeat_interleave(F, dim=1) 
         tgt_padding_mask_local = padding_mask.reshape(-1).unsqueeze(1).repeat_interleave(self.seq_len,dim=1) 
   
-        # データの整形
+        # Reshape data
         tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
         tgt_3dpose = torch.transpose(tgt_3dpose, 0,1).reshape(in_F*self.joints_pose, -1, self.nhid) 
-        #アブレーションのための3dposeゼロ埋め
+        # Zero out 3D pose for ablation
         # tgt_3dpose = torch.zeros(in_F*self.joints_pose, B*N , self.nhid).to(self.device)
         # print("traj mean/std:", tgt_traj.mean().item(), tgt_traj.std().item())
         # print("3dpose mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
-        # 結合
+        # Concatenate
         tgt = torch.cat((tgt_traj, tgt_3dpose), 0) 
-        # Transformer処理
+        # Transformer forward
         if get_attn:
             out_local, attn_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local, get_attn=True)
         else:
@@ -313,7 +313,7 @@ def create_model(config, logger):
         device=config["DEVICE"]
     ).to(config["DEVICE"]).float()
 
-    # 訓練時のみ事前学習バックボーンを読み込んで凍結．
+    # Load and freeze the pretrained backbone only during training.
     ckpt_path = config["MODEL"].get("backbone_ckpt")
     if model.training and ckpt_path:
         load_and_freeze_backbone_for_transmotion(model, ckpt_path, device=config["DEVICE"])
@@ -327,9 +327,9 @@ def create_model(config, logger):
 
 def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: str, device='cpu'):
     """
-    ckpt の 'encoder_state_dict'（または 'state_dict'）にある
+    In ckpt['encoder_state_dict'] (or 'state_dict'),
       - 'encoder.*'           → model.stgcn.*
-    を読み込んで、両モジュールを凍結（勾配停止＋BNをeval固定）する。
+    load weights and freeze both modules (no grads + BN eval).
     """
     # Snapshot current ST-GCN weights for diff
     before = {k: v.detach().cpu().clone() for k, v in model.stgcn.state_dict().items()}
@@ -343,7 +343,7 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
     else:
         sd = ckpt
 
-    # DataParallel対策: 'module.' を剥がす
+    # DataParallel: strip 'module.' prefix
     def strip_module(k): 
         return k[7:] if k.startswith('module.') else k
 
@@ -366,7 +366,7 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
             continue
 
 
-    # 既存 state_dict に上書き（形状が一致するキーのみ）
+    # Update current state_dict (keys with matching shapes only)
     cur = model.state_dict()
     matched = {k: v for k, v in remapped.items() if k in cur and cur[k].shape == v.shape}
     cur.update(matched)
@@ -395,7 +395,7 @@ def load_and_freeze_backbone_for_transmotion(model: TransMotion3DP, ckpt_path: s
     #       f"(missing={len(getattr(missing, 'missing_keys', missing))}, "
     #       f"unexpected={len(getattr(unexpected, 'unexpected_keys', unexpected))})")
 
-    # ---- ST-GCNは凍結（BNも含めて固定） ----
+    # ---- Freeze ST-GCN (including BN) ----
     model.stgcn.eval()
     for p in model.stgcn.parameters():
         p.requires_grad = False

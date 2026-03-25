@@ -40,9 +40,9 @@ def evaluate_ade_fde(model, dataloader, bs, config, logger, return_all=False, ba
     fde_batch = 0
     all_predictions = [] if save_predictions else None
     
-    # 可視化するサンプルインデックスのセットを作成
+    # Build a set of sample indices to visualize
     vis_sample_set = set(vis_sample_indices) if vis_sample_indices is not None else set()
-    global_sample_idx = 0  # グローバルなサンプルインデックス（全バッチを通して、0から始まる）
+    global_sample_idx = 0  # Global sample index across batches (starts at 0)
     
     for i, batch in enumerate(dataloader):
         bar.next()
@@ -51,7 +51,7 @@ def evaluate_ade_fde(model, dataloader, bs, config, logger, return_all=False, ba
    
         in_joints, in_masks, out_joints, out_masks, padding_mask = batch_process_coords(joints, masks, padding_mask, config)
         
-        # 入力骨格の可視化（指定されたサンプル番号のみ）
+        # Visualize input skeletons (only requested samples)
         if visualize_input and vis_dir is not None and len(vis_sample_set) > 0:
             for local_sample_idx in range(in_joints.size(0)):
                 current_global_idx = global_sample_idx + local_sample_idx
@@ -70,7 +70,7 @@ def evaluate_ade_fde(model, dataloader, bs, config, logger, return_all=False, ba
         pred_joints = pred_joints.cpu().reshape(out_joints.size(0), 12, 1, 2)    
         
         for k in range(len(out_joints)):
-            # グローバルサンプルインデックス（予測保存と可視化で同じインデックスを使用）
+            # Use the same global index for saving predictions and visualization
             current_global_idx = global_sample_idx + k
 
             person_out_joints = out_joints[k,:,0:1]
@@ -79,11 +79,11 @@ def evaluate_ade_fde(model, dataloader, bs, config, logger, return_all=False, ba
             gt_xy = person_out_joints[:,0,:2]
             pred_xy = person_pred_joints[:,0,:2]
             
-            # 予測結果を保存（インデックス0から順番に保存）
+            # Save predictions in order starting from index 0
             if save_predictions:
                 pred_list = [[float(pred_xy[t, 0].item()), float(pred_xy[t, 1].item())] for t in range(12)]
                 all_predictions.append(pred_list)
-                # all_predictions[current_global_idx] でアクセス可能（0から始まる）
+                # Accessible via all_predictions[current_global_idx] (0-based)
             
             sum_ade = 0
                 
@@ -102,7 +102,7 @@ def evaluate_ade_fde(model, dataloader, bs, config, logger, return_all=False, ba
 
             fde_batch += scene_fde
         
-        # グローバルサンプルインデックスを更新（バッチ処理後）
+        # Update global sample index after each batch
         global_sample_idx += in_joints.size(0)
         batch_id+=1
     bar.finish()
@@ -120,38 +120,38 @@ def count_parameters(model):
 
 def visualize_input_skeleton(in_joints, save_path, sample_idx=0, config=None, device='cuda:0'):
     """
-    入力骨格を可視化する（マスク前とマスク後の両方を表示）
+    Visualize input skeletons (both before and after masking).
     
     Args:
-        in_joints: (B, in_F, N*J, 4) の形状のテンソル
-                   - インデックス0: 軌跡データ（traj）
-                   - インデックス1-22: 22個の関節の3D姿勢データ
-        save_path: 保存パス
-        sample_idx: 可視化するサンプルのインデックス
-        config: 設定辞書（mask_ratio, mask_joints を含む）
-        device: デバイス
+        in_joints: Tensor shaped (B, in_F, N*J, 4)
+                   - index 0: trajectory data (traj)
+                   - index 1-22: 3D pose data for 22 joints
+        save_path: output file path
+        sample_idx: sample index to visualize
+        config: config dict (contains mask_ratio, mask_joints)
+        device: device
     """
-    # 最初の人物（person_idx=0）の骨格データを取得: (in_F, 22, 3)
-    # インデックス 1:23 が最初の人物の22関節
-    # 各人物は23トークン（軌跡1 + 関節22）で構成されている
-    # モデルと同じデータを可視化: tgt_3dpose = tgt[:,:,:,1:,:3] に対応
-    person_idx = 0  # 常に最初の人物を可視化
-    start_idx = person_idx * 23 + 1  # 軌跡（インデックス0）をスキップして関節データを取得
-    end_idx = start_idx + 22  # 22関節（インデックス1-22）
+    # Take the first person (person_idx=0): (in_F, 22, 3)
+    # Indices 1:23 correspond to the first person's 22 joints
+    # Each person has 23 tokens (1 traj + 22 joints)
+    # Matches model input: tgt_3dpose = tgt[:,:,:,1:,:3]
+    person_idx = 0  # Always visualize the first person
+    start_idx = person_idx * 23 + 1  # Skip traj token (index 0)
+    end_idx = start_idx + 22  # 22 joints (indices 1-22)
     in_joints_3dpose = in_joints[sample_idx, :, start_idx:end_idx, :3]  # (in_F, 22, 3)
-    # これでモデルが処理するのと同じ3D姿勢データ（22関節）を可視化している
+    # This visualizes the same 3D pose data (22 joints) used by the model
     
     in_F = in_joints_3dpose.shape[0]
     joints_pose = 22
     
-    # マスクの適用（モデルと同じロジック）
+    # Apply masking (same logic as the model)
     mask_ratio = config.get("MODEL", {}).get("mask_rate", 0.0) if config else 0.0
     mask_joints = config.get("MODEL", {}).get("mask_joints", None) if config else None
     
-    # マスク適用前のデータを保存
+    # Keep a copy before masking
     orig_joints = in_joints_3dpose.clone()
     
-    # マスクロジック（モデルと同じ）
+    # Masking logic (same as the model)
     allowed_joints = torch.tensor(
         [j for j in range(joints_pose) if j != 15],
         device=device,
@@ -164,10 +164,10 @@ def visualize_input_skeleton(in_joints, save_path, sample_idx=0, config=None, de
         num_mask = int(mask_joints)
     num_mask = max(0, min(num_mask, allowed_joints.numel()))
     
-    # 各フレームでマスクを適用
+    # Apply masking per frame
     for frame_idx in range(in_F):
         if num_mask > 0:
-            # 同じシードで再現性を保つ（サンプルとフレームに基づく）
+            # Keep reproducibility via a fixed seed (sample + frame)
             torch.manual_seed(sample_idx * 1000 + frame_idx)
             scores = torch.rand((allowed_joints.numel(),), device=device)
             _, idx = scores.topk(num_mask, dim=-1)
@@ -176,17 +176,17 @@ def visualize_input_skeleton(in_joints, save_path, sample_idx=0, config=None, de
             masked_indices = selected.cpu().numpy()
             masked_indices_per_frame.append(masked_indices)
             
-            # マスクトークンで置き換え
+            # Replace with mask token
             mask_token = torch.tensor([0.0, 0.0, 0.0], device=device, dtype=in_joints_3dpose.dtype)
             in_joints_3dpose[frame_idx, selected] = mask_token
         else:
             masked_indices_per_frame.append(np.array([], dtype=int))
     
-    # numpy に変換
+    # Convert to numpy
     orig_joints_np = to_numpy_array(orig_joints)  # (in_F, 22, 3)
     masked_joints_np = to_numpy_array(in_joints_3dpose)  # (in_F, 22, 3)
     
-    # 各フレームの座標をカメラ座標系に変換
+    # Convert coordinates to camera space per frame
     orig_coords_list = []
     mask_coords_list = []
     mask_coords_raw_list = []
@@ -203,14 +203,14 @@ def visualize_input_skeleton(in_joints, save_path, sample_idx=0, config=None, de
         mask_coords_list.append(mask_coords)
         mask_coords_raw_list.append(mask_coords_raw)
     
-    # グローバルな軸の範囲を計算
+    # Compute global axis bounds
     global_bounds = compute_coord_axis_bounds(
         orig_coords_list + mask_coords_list + mask_coords_raw_list,
         margin=0.08,
     )
     
-    # 各フレームを可視化（マスク前とマスク後の2行）
-    # フレーム順序: frame_idx=0 (F1) が一番左、frame_idx=in_F-1 (F9) が一番右（最終観測フレーム）
+    # Render each frame (two rows: before and after masking)
+    # Frame order: frame_idx=0 (F1) leftmost, frame_idx=in_F-1 (F9) rightmost
     orig_images = []
     mask_images = []
     
@@ -218,8 +218,8 @@ def visualize_input_skeleton(in_joints, save_path, sample_idx=0, config=None, de
         masked_ids = np.asarray(masked_indices_per_frame[frame_idx], dtype=int)
         unmasked_ids = np.setdiff1d(joint_idx, masked_ids)
         
-        # マスク前（元の骨格）
-        # frame_idx=0 が F1（1フレーム目）、frame_idx=in_F-1 が F9（最終観測フレーム）
+        # Before masking (original skeleton)
+        # frame_idx=0 -> F1 (first frame), frame_idx=in_F-1 -> F9 (last observed)
         orig_images.append(
             _render_tile_image(
                 lambda ax, idx=frame_idx: _draw_original_view(
@@ -235,7 +235,7 @@ def visualize_input_skeleton(in_joints, save_path, sample_idx=0, config=None, de
             )
         )
         
-        # マスク後（マスクが適用された骨格）
+        # After masking (masked skeleton)
         mask_images.append(
             _render_tile_image(
                 lambda ax, idx=frame_idx: _draw_mask_view(
@@ -257,15 +257,15 @@ def visualize_input_skeleton(in_joints, save_path, sample_idx=0, config=None, de
             )
         )
     
-    # 画像をクロップして統一
+    # Crop images to a common size
     orig_images, mask_images = _crop_image_lists_uniform([orig_images, mask_images])
     
-    # 2行に配置（1行目: マスク前、2行目: マスク後）
+    # Stack into two rows (row1: original, row2: masked)
     row1 = np.concatenate(orig_images, axis=1)
     row2 = np.concatenate(mask_images, axis=1)
     final = np.concatenate([row1, row2], axis=0)
     
-    # 保存
+    # Save
     import matplotlib.pyplot as plt
     plt.imsave(save_path, final)
 
@@ -336,7 +336,7 @@ if __name__ == "__main__":
     bs = config['TRAIN']['batch_size']
     dataloader = DataLoader(dataset, batch_size=bs, num_workers=config['TRAIN']['num_workers'], shuffle=False, collate_fn=collate_batch)
     
-    # 可視化ディレクトリの作成
+    # Create visualization output directory
     vis_dir = None
     if args.vis_dir is not None:
         vis_dir = args.vis_dir
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     print('Params (total): ', total_params)
     print('Params (trainable): ', trainable_params)
     
-    # 予測結果をJSONで保存
+    # Save predictions to JSON
     if args.output is not None and all_predictions is not None:
         with open(args.output, 'w') as f:
             json.dump(all_predictions, f)

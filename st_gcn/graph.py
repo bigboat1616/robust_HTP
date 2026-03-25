@@ -66,22 +66,22 @@ class Graph():
             self.num_node = 22
             self_link = [(i, i) for i in range(self.num_node)]
             neighbor_link = [
-                # 頭部
+                # Head
                 (0, 1), (1, 2),  # head_top -> head_center -> neck
                 
-                # 右腕
+                # Right arm
                 (2, 3), (3, 4), (4, 5), (5, 6),  # neck -> right_clavicle -> right_shoulder -> right_elbow -> right_wrist
                 
-                # 左腕
+                # Left arm
                 (2, 7), (7, 8), (8, 9), (9, 10),  # neck -> left_clavicle -> left_shoulder -> left_elbow -> left_wrist
                 
-                # 脊椎
+                # Spine
                 (2, 11), (11, 12), (12, 13), (13, 14), (14, 15),  # neck -> spine0 -> spine1 -> spine2 -> spine3 -> spine4
                 
-                # 右足
+                # Right leg
                 (15, 16), (16, 17), (17, 18),  # spine4 -> right_hip -> right_knee -> right_ankle
                 
-                # 左足
+                # Left leg
                 (15, 19), (19, 20), (20, 21),  # spine4 -> left_hip -> left_knee -> left_ankle
             ]
             self.edge = self_link + neighbor_link
@@ -90,22 +90,22 @@ class Graph():
             self.num_node = 22
             self_link = [(i, i) for i in range(self.num_node)]
             neighbor_link = [
-                # 頭部
+                # Head
                 (0, 1), (1, 2),  # head_top -> head_center -> neck
                 
-                # 右腕
+                # Right arm
                 (2, 3), (3, 4), (4, 5), (5, 6),  # neck -> right_clavicle -> right_shoulder -> right_elbow -> right_wrist
                 
-                # 左腕
+                # Left arm
                 (2, 7), (7, 8), (8, 9), (9, 10),  # neck -> left_clavicle -> left_shoulder -> left_elbow -> left_wrist
                 
-                # 脊椎
+                # Spine
                 (2, 11), (11, 12), (12, 13), (13, 14), (14, 15),  # neck -> spine0 -> spine1 -> spine2 -> spine3 -> spine4
                 
-                # 右足
+                # Right leg
                 (15, 16), (16, 17), (17, 18),  # spine4 -> right_hip -> right_knee -> right_ankle
                 
-                # 左足
+                # Left leg
                 (15, 19), (19, 20), (20, 21),  # spine4 -> left_hip -> left_knee -> left_ankle
             ]
             self.edge = self_link + neighbor_link

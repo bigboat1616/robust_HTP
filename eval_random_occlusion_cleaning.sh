@@ -6,7 +6,7 @@ GPU_ID="${1:-7}"
 CKPT="experiments/jta_3dp_not_normalization_finetune_final_sampling_mask0_true/checkpoints/checkpoint.pth.tar"
 RECON_CKPT="skeleton_mae/ckpt/0.5_mask0/checkpoints/best_model_final.pth"
 
-# mask joints を0から21まで1刻みで実行（関節15は内部で除外）
+# Run mask joints from 0 to 21 in steps of 1 (joint 15 is excluded internally)
 # for mask_joints in $(seq 0 1 21); do
 #
 #   echo "=== Evaluating mask joints: ${mask_joints} ==="
@@ -17,7 +17,7 @@ RECON_CKPT="skeleton_mae/ckpt/0.5_mask0/checkpoints/best_model_final.pth"
 #
 # done
 
-# mask rateを0から1まで0.1刻みで実行
+# Run mask rate from 0 to 1 in steps of 0.1
 for mask_rate in $(seq 0.0 0.1 1.0); do
 
   echo "=== Evaluating mask rate: ${mask_rate} ==="

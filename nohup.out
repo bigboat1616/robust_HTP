@@ -84,3 +84,27 @@ time for training:  669.3779616355896
 epoch  1  finished!
 Epoch 1 finished! Training time: 669.38 seconds
 Epoch 2: Learning rate adjusted to 0.000100
+time for training:  666.6854646205902
+epoch  2  finished!
+Epoch 2 finished! Training time: 666.69 seconds
+Epoch 3: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.651630348194866
+Best ADE: 1.651630
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  667.8144598007202
+epoch  3  finished!
+Epoch 3 finished! Training time: 667.81 seconds
+Epoch 4: Learning rate adjusted to 0.000100
+time for training:  667.3462226390839
+epoch  4  finished!
+Epoch 4 finished! Training time: 667.35 seconds
+Epoch 5: Learning rate adjusted to 0.000100
+------------------------------BEST MODEL UPDATED------------------------------
+Best ADE:  1.6422780028740454
+Best ADE: 1.642278
+Saving checkpoint to best_val_checkpoint.pth.tar.
+time for training:  665.1981072425842
+epoch  5  finished!
+Epoch 5 finished! Training time: 665.20 seconds
+Epoch 6: Learning rate adjusted to 0.000100

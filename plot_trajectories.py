@@ -12,17 +12,17 @@ from utils.utils import create_logger
 from torch.utils.data import DataLoader
 
 def load_model(ckpt_path, device="cpu"):
-    """モデルをロード"""
+    """Load a model."""
     logger = create_logger('')
     ckpt = torch.load(ckpt_path, map_location=device)
     config = ckpt['config']
     config["DEVICE"] = device
     
-    # モデルの種類を判断（configの内容やチェックポイントのパスから判断）
+    # Determine model type (from config or checkpoint path)
     if "traj" in ckpt_path:
-        from model_jrdb_traj import create_model  # 軌跡のみモデル
+        from model_jrdb_traj import create_model  # Trajectory-only model
     else:
-        from model_jrdb_original import create_model  # オリジナルモデル（2DBBあり）
+        from model_jrdb_original import create_model  # Original model (with 2D BB)
     
     model = create_model(config, logger)
     model.load_state_dict(ckpt['model'])
@@ -30,7 +30,7 @@ def load_model(ckpt_path, device="cpu"):
     return model, config
 
 def get_predictions(model, config, joints, masks, padding_mask):
-    """モデルの予測を取得"""
+    """Get model predictions."""
     padding_mask = padding_mask.to(config["DEVICE"])
     in_joints, in_masks, out_joints, out_masks, padding_mask = batch_process_coords(
         joints, masks, padding_mask, config, modality_selection='traj'
@@ -43,10 +43,10 @@ def get_predictions(model, config, joints, masks, padding_mask):
     return in_joints.cpu(), out_joints.cpu(), pred_joints.cpu()
 
 def plot_trajectories(gt_xy, pred_xys, obs_xy, person_id, model_names, save_path="trajectory_plots"):
-    """複数モデルの予測を同時プロット"""
+    """Plot predictions from multiple models."""
     plt.figure(figsize=(10, 10))
     
-    # スケール設定
+    # Scale settings
     all_trajectories = [obs_xy, gt_xy] + pred_xys
     all_x = np.concatenate([traj[:,0] for traj in all_trajectories])
     all_y = np.concatenate([traj[:,1] for traj in all_trajectories])
@@ -57,20 +57,20 @@ def plot_trajectories(gt_xy, pred_xys, obs_xy, person_id, model_names, save_path
     plt.xlim(x_min, x_max)
     plt.ylim(y_min, y_max)
     
-    # 観測軌跡（過去）
+    # Observed trajectory (past)
     plt.plot(obs_xy[:,0], obs_xy[:,1], 'b.-', label='Observed', alpha=0.5)
     
-    # Ground Truth（未来）
+    # Ground truth (future)
     gt_with_start = np.vstack([obs_xy[-1:], gt_xy])
     plt.plot(gt_with_start[:,0], gt_with_start[:,1], 'g.-', label='Ground Truth', alpha=0.5)
     
-    # 各モデルの予測
-    colors = ['r', 'm', 'c', 'y']  # 必要に応じて色を追加
+    # Predictions per model
+    colors = ['r', 'm', 'c', 'y']  # Add more colors if needed
     for i, pred_xy in enumerate(pred_xys):
         pred_with_start = np.vstack([obs_xy[-1:], pred_xy])
         plt.plot(pred_with_start[:,0], pred_with_start[:,1], 
                 f'{colors[i]}.-', label=f'{model_names[i]}', alpha=0.5)
-        # 終点をマーク
+        # Mark end point
         plt.plot(pred_xy[-1,0], pred_xy[-1,1], f'{colors[i]}*', 
                 label=f'{model_names[i]} End')
     
@@ -78,7 +78,7 @@ def plot_trajectories(gt_xy, pred_xys, obs_xy, person_id, model_names, save_path
     gt_with_start = np.vstack([obs_xy[-1:], gt_xy])
 
     
-    # 始点と終点
+    # Start and end points
     plt.plot(obs_xy[0,0], obs_xy[0,1], 'ko', label='Start')
     plt.plot(gt_xy[-1,0], gt_xy[-1,1], 'k*', label='GT End')
     
@@ -103,19 +103,19 @@ def main():
     parser.add_argument("--num_samples", type=int, default=10, help="number of samples to plot")
     args = parser.parse_args()
     
-    # デバイス設定
+    # Device setup
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
-    # モデル名の設定
+    # Model name settings
     if not args.model_names:
         args.model_names = [f"Model_{i}" for i in range(len(args.ckpts))]
     assert len(args.ckpts) == len(args.model_names), "Number of checkpoints and model names must match"
     
-    # モデルのロード
+    # Load models
     models_and_configs = [load_model(ckpt, device) for ckpt in args.ckpts]
     models, configs = zip(*models_and_configs)
     
-    # データセットの作成
+    # Create dataset
     logger = create_logger('')
     dataset = create_dataset(
         configs[0]['DATA']['train_datasets'][0],
@@ -125,10 +125,10 @@ def main():
         track_cutoff=configs[0]['TRAIN']['input_track_size']
     )
     
-    # データローダーの設定
+    # DataLoader setup
     dataloader = DataLoader(
         dataset,
-        batch_size=1,  # 1サンプルずつ処理
+        batch_size=1,  # Process one sample at a time
         shuffle=False,
         collate_fn=collate_batch
     )
@@ -140,21 +140,21 @@ def main():
             
         joints, masks, padding_mask = batch
         
-        # 各モデルの予測を取得
+        # Get predictions per model
         all_predictions = []
         for model, config in zip(models, configs):
             in_joints, out_joints, pred = get_predictions(model, config, joints, masks, padding_mask)
-            if len(all_predictions) == 0:  # 最初のモデルの時
-                obs_xy = in_joints[0,:,0,:2]  # 観測データ
+            if len(all_predictions) == 0:  # First model only
+                obs_xy = in_joints[0,:,0,:2]  # Observed data
                 gt_xy = out_joints[0,:,0,:2]  # Ground Truth
             pred_xy = pred[0].reshape(out_joints.size(1), 1, 2)[:,0,:2]
             all_predictions.append(pred_xy)
         
-        # パディングチェック
+        # Padding check
         if padding_mask[0].sum() == padding_mask[0].shape[0]:
             continue
             
-        # プロット
+        # Plot
         plot_trajectories(
             gt_xy.numpy(),
             [p.numpy() for p in all_predictions],

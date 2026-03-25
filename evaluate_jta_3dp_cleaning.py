@@ -9,7 +9,7 @@ from progress.bar import Bar
 from torch.utils.data import DataLoader
 
 from dataset_jta import batch_process_coords, create_dataset, collate_batch
-from model_jta_3dp_cleaning import create_model
+from model_jta_3dp_cleaning_baseline import create_model
 from utils.utils import create_logger
 
 
@@ -160,7 +160,7 @@ def evaluate_ade_fde(model, dataloader, bs, config, logger, return_all=False, ba
             gt_xy = person_out_joints[:,0,:2]
             pred_xy = person_pred_joints[:,0,:2]
             
-            # 予測結果を保存
+            # Save predictions
             if save_predictions:
                 pred_list = [[float(pred_xy[t, 0].item()), float(pred_xy[t, 1].item())] for t in range(12)]
                 all_predictions.append(pred_list)
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     print('Params (total): ', total_params)
     print('Params (trainable): ', trainable_params)
     
-    # 予測結果をJSONで保存
+    # Save predictions to JSON
     if args.output is not None and all_predictions is not None:
         with open(args.output, 'w') as f:
             json.dump(all_predictions, f)

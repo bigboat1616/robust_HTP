@@ -24,7 +24,7 @@ Place JTA-3DP data under `data/jta_3dp` (train/val/test subfolders). For other d
 
 Pretrain the skeleton encoder:
 ```
-python skeleton_mae/main_skeleton_coord.py --cfg skeleton_mae/configs_skeleton.yml
+python stage1/main_skeleton_coord.py --cfg stage1/configs_skeleton.yml
 ```
 Checkpoints are saved under the YAML-defined `TRAIN.save_dir`, with:
 - `model_final.pth` (final epoch)

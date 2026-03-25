@@ -96,17 +96,17 @@ class TransMotion3DP(nn.Module):
         self.mask_ratio = mask_ratio
         self.mask_joints = mask_joints
         
-        # 軌跡用のレイヤー
+        # Trajectory layers
         self.fc_in_traj = nn.Linear(2, nhid)
         self.fc_out_traj = nn.Linear(nhid, 2)
         self.double_id_encoder = LearnedTrajandIDEncoding(nhid, dropout, seq_len=21, device=device)
         self.id_encoder = LearnedIDEncoding(nhid, dropout, seq_len=21, device=device)
 
-        # 3D姿勢用のレイヤー
+        # 3D pose layers
         self.fc_in_3dpose = nn.Linear(3, nhid)
         self.pose3d_encoder = Learnedpose3dEncoding(nhid, dropout, device=device)
 
-        # Transformerレイヤー
+        # Transformer layers
         encoder_layer_local = nn.TransformerEncoderLayer(d_model=nhid,
                                                    nhead=nhead,
                                                    dim_feedforward=dim_feedfwd,
@@ -129,23 +129,23 @@ class TransMotion3DP(nn.Module):
         out_F = F - in_F
         N = NJ // J
         
-        # パディングの処理
+        # Padding handling
         pad_idx = np.repeat([in_F - 1], out_F)
         i_idx = np.append(np.arange(0, in_F), pad_idx)  
         tgt = tgt[:,i_idx]        
         tgt = tgt.reshape(B,F,N,J,K)
     
-        # マスクの設定
+        # Mask configuration
         mask_ratio_traj = 0.0
         mask_ratio = self.mask_ratio
 
-        # 軌跡データの処理
+        # Trajectory data processing
         tgt_traj = tgt[:,:,:,0,:2]
         traj_mask = torch.rand((B,F,N)).float().to(self.device) > mask_ratio_traj
         traj_mask = traj_mask.unsqueeze(3).repeat_interleave(2,dim=-1)
         tgt_traj = tgt_traj*traj_mask
 
-        # 3D姿勢データの処理
+        # 3D pose data processing
         tgt_3dpose = tgt[:,:,:,1:,:3]  
         allowed_joints = torch.tensor(
             [j for j in range(self.joints_pose) if j != 15],
@@ -166,7 +166,7 @@ class TransMotion3DP(nn.Module):
         tgt_3dpose = torch.where(joints_3d_mask.unsqueeze(-1), mask_token, tgt_3dpose)
 
 
-        # エンコーディング
+        # Encoding
         tgt_traj = self.fc_in_traj(tgt_traj) 
         tgt_traj = self.double_id_encoder(tgt_traj, num_people=N) 
 
@@ -175,22 +175,21 @@ class TransMotion3DP(nn.Module):
         tgt_3dpose = self.pose3d_encoder(tgt_3dpose)
 
 
-        # パディングマスクの処理
+        # Padding mask handling
         tgt_padding_mask_global = padding_mask.repeat_interleave(F, dim=1) 
         tgt_padding_mask_local = padding_mask.reshape(-1).unsqueeze(1).repeat_interleave(self.seq_len,dim=1) 
   
-        # データの整形
+        # Reshape data
         tgt_traj = torch.transpose(tgt_traj,0,1).reshape(F,-1,self.nhid) 
         tgt_3dpose = torch.transpose(tgt_3dpose, 0,1).reshape(in_F*self.joints_pose, -1, self.nhid) 
 
-        # アブレーションのための3dposeゼロ埋め
+        # Zero out 3D pose for ablation
         # tgt_3dpose = torch.zeros(in_F*self.joints_pose, B*N , self.nhid).to(self.device)
-        # print("traj mean/std:", tgt_traj.mean().item(), tgt_traj.std().item())
-        # print("3dpose mean/std:", tgt_3dpose.mean().item(), tgt_3dpose.std().item())
-        # 結合
+
+        # Concatenate
         tgt = torch.cat((tgt_traj, tgt_3dpose), 0) 
 
-        # Transformer処理
+        # Transformer forward
         out_local = self.local_former(tgt, mask=None, src_key_padding_mask=tgt_padding_mask_local)
         # print("out_local mean/std:", out_local.mean().item(), out_local.std().item())
         out_local = out_local * self.output_scale + tgt
