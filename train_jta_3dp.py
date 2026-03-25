@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, ConcatDataset, Subset
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset_jta import collate_batch, batch_process_coords, get_datasets, create_dataset
-from model_jta_3dp_finetune_coord2 import create_model
+from model_jta_3dp import create_model
 from utils.utils import create_logger, load_default_config, load_config, AverageMeter
 from utils.metrics import MSE_LOSS
 

@@ -274,7 +274,7 @@ class TransMotion3DP(nn.Module):
         # 3D座標が完全に0の関節のみ再構成で置き換え（関節15は除外）
         replace_mask = joints_3d_mask[:,:9]
         pose_input_9 = torch.where(replace_mask.unsqueeze(-1), recon_pose_9, pose_input_9)
-        # model_jta_3dp_finetune_coord2.pyのフローに合わせてreshape: (B, 9,22, N, 3)へ変換
+        # model_jta_3dp_finetune.pyのフローに合わせてreshape: (B, 9,22, N, 3)へ変換
         tgt_3dpose = pose_input_9.permute(0, 2, 4, 1, 3).contiguous()
         tgt_3dpose = tgt_3dpose.reshape(BN, 3, 9, 22) 
         tgt_3dpose = self.stgcn(tgt_3dpose)  # (B*N, nhid, 9, 22)

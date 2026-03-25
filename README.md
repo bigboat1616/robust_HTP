@@ -46,5 +46,5 @@ python evaluate_jta_3dp.py --ckpt <checkpoint> --metric ade_fde --modality traj+
 
 # Notes
 
-- Skeleton encoder weights are loaded and frozen in `model_jta_3dp_finetune_coord2.py`.
+- Skeleton encoder weights are loaded and frozen in `model_jta_3dp_finetune.py`.
 - If you change checkpoint naming or directories, update `TRAIN.save_dir` in `skeleton_mae/configs_skeleton.yml` and `MODEL.backbone_ckpt` in `configs/jta_3dp.yaml`.

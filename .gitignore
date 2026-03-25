@@ -1,12 +1,10 @@
 # Ignore Python virtual environment
 venv/
 
-# Ignore compiled Python files
+# Ignore compiled Python files and caches
 *.pyc
-
-# Ignore cache and temporary files
-__pycache__/
 *.pyo
+__pycache__/
 *.swp
 *.swo
 
@@ -42,10 +40,7 @@ htmlcov/
 *.db
 
 # Ignore generated files
-*.pyc
-*.pyo
 *.pyd
-__pycache__/
 
 # Ignore cache files
 *.cache
@@ -56,7 +51,7 @@ Thumbs.db
 *.ndjson
 experiments/*
 data/*
-trajectories/*
+visualizations/*
 wandb/*
 
 *.pt
@@ -75,4 +70,4 @@ plots/*
 plots_50_0/*
 future_traj/*
 *.out
-nohup.out
+*.json
